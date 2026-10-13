@@ -2,6 +2,8 @@
 
 一个用于 Pocket Qt App 快速添加站点的 Chrome 扩展。它可以从已登录的站点读取导入所需的配置，并生成供 Pocket Qt 手机端扫码导入的二维码。
 
+蜂巢ID：kxmrg
+
 ## 功能
 
 - 识别 NexusPHP、TNode、mTorrent、SunnyPt、HaiDanPt、Gazelle 和 UNIT3D 架构站点；
