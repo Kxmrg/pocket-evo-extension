@@ -1,61 +1,35 @@
 import type { SiteDraft } from './adapt-site';
-import { privateSiteForHost } from './private-sites';
-
-export interface DraftValidation {
-  valid: boolean;
-  errors: Record<string, string>;
-}
-
-const expectedScheme: Record<string, number> = {
-  nexusphp: 0,
-  tnode: 1,
-  mtorrent: 2,
-  haidan: 3,
-  sunnypt: 4,
-  gazelle: 5,
-  unit3d: 6,
-  private: 7,
-};
-
-function isHttpAddress(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return (url.protocol === 'http:' || url.protocol === 'https:') && Boolean(url.hostname);
-  } catch {
-    return false;
-  }
-}
-
+import { entryError } from './evo-entry';
+export interface DraftValidation { valid: boolean; errors: Record<string, string>; }
 export function validateDraft(draft: SiteDraft): DraftValidation {
-  const errors: Record<string, string> = {};
-  if (draft.scheme === null || expectedScheme[draft.architecture] !== draft.scheme) {
-    errors.architecture = '请选择 Pocket Qt 支持的站点架构';
-  }
+  const errors: Record<string,string> = {};
+  const expected: Record<string,number> = {nexusphp:0,tnode:1,mtorrent:2};
+  if (draft.scheme === null || expected[draft.architecture] !== draft.scheme) errors.architecture = '请选择 Evo 支持的架构';
   if (!draft.name.trim()) errors.name = '请输入站点名称';
-  if (!isHttpAddress(draft.address)) errors.address = '请输入有效的 HTTP 或 HTTPS 站点地址';
-  else if (draft.architecture === 'private' && !privateSiteForHost(new URL(draft.address).hostname)) {
-    errors.address = '该 Private 站点尚未适配';
+  else if (Array.from(draft.name.trim()).length > 20) errors.name = '站点名称最多20个字符';
+  try {
+    const u = new URL(draft.address);
+    if (!['http:','https:'].includes(u.protocol) || !u.hostname || u.username || u.password || u.search || u.hash || (u.pathname !== '/' && u.pathname !== '') || draft.address.length>2048) throw new Error();
+  } catch { errors.address = '请输入有效的 HTTP 或 HTTPS 站点地址'; }
+  if (draft.architecture !== 'mtorrent' && (!draft.cookie.trim() || draft.cookie.length > 16384 || /[\r\n]/.test(draft.cookie))) errors.cookie = '请输入有效 Cookie';
+  if (draft.architecture !== 'mtorrent' && ((draft.passkey?.length ?? 0)>256 || /[\s\x00-\x1f]/.test(draft.passkey ?? ''))) errors.passkey='Passkey 格式不正确';
+  if (draft.architecture === 'mtorrent') {
+    if (!draft.token?.trim()) errors.token = '请输入 API Key';
+    if (!/^[1-9][0-9]{0,19}$/.test(draft.passkey ?? '')) errors.passkey = '请输入有效 UID';
+    for (const k of ['token','webToken','webDeviceId','webVisitorId'] as const) if ((draft[k]?.length ?? 0)>16384 || /[\s\x00-\x1f]/.test(draft[k] ?? '')) errors[k] = '凭据格式不正确';
   }
-
-  if (draft.architecture !== 'mtorrent' && !draft.cookie.trim()) {
-    errors.cookie = '请输入 Cookie';
+  if (draft.importUserAgent && ((draft.userAgent?.length ?? 0)>512 || /[\r\n]/.test(draft.userAgent ?? ''))) errors.userAgent='User-Agent 格式不正确';
+  const pages=draft.pages.filter(p=>p.selected);
+  if (!pages.length || pages.length>50) errors.pages='请选择1至50个资源入口';
+  else if (pages.some(p=>!p.name.trim() || Array.from(p.name.trim()).length>40)) errors.pages='入口名称需为1至40个字符';
+  else if (new Set(pages.map(p=>p.name.trim().toLowerCase())).size!==pages.length) errors.pages='入口名称不能重复';
+  else {
+    const index=pages.findIndex(p=>entryError(draft.architecture,p.path));
+    if (index>=0) errors.pages=`第${index+1}个已选入口：${entryError(draft.architecture,pages[index]!.path)}`;
   }
-  if (draft.architecture === 'tnode' && !draft.token?.trim()) errors.token = '请输入 X-Csrf-Token';
-  if (draft.architecture === 'mtorrent' && !draft.token?.trim()) errors.token = '请前往控制台实验室复制令牌并手动填写';
-  if (draft.architecture === 'mtorrent' && !draft.passkey?.trim()) errors.passkey = '请输入 UID';
-  if (draft.architecture === 'haidan' && !draft.token?.trim()) errors.token = '请输入 UID';
-
-  const selectedPages = draft.pages.filter((page) => page.selected);
-  if (selectedPages.length === 0) {
-    errors.pages = '至少选择一个种子页面';
-  } else if (selectedPages.some((page) => !page.path.startsWith('/'))) {
-    errors.pages = '种子页面路径必须以 / 开头';
-  } else if (selectedPages.some((page) => !page.name.trim())) {
-    errors.pages = '种子页面名称不能为空';
+  for (const k of ['tags','downloadTags'] as const) {
+    const tags=[...new Set((draft[k] ?? '').split(',').map(s=>s.trim()).filter(Boolean))];
+    if (tags.length>20 || tags.some(s=>Array.from(s).length>40)) errors[k]='最多20个标签，每个不超过40个字符';
   }
-
-  if (!Number.isInteger(draft.widget) || draft.widget < 1 || draft.widget > 999) {
-    errors.widget = '权重必须为 1 到 999 的整数';
-  }
-  return { valid: Object.keys(errors).length === 0, errors };
+  return {valid:!Object.keys(errors).length,errors};
 }

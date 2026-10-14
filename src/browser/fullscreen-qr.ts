@@ -39,7 +39,7 @@ function validSession(value: unknown): value is FullscreenQrSession {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Partial<FullscreenQrSession>;
   return typeof candidate.text === 'string'
-    && candidate.text.startsWith('pocket-pt://import/site?')
+    && candidate.text.startsWith('pocket-evo://import/site?')
     && typeof candidate.siteName === 'string';
 }
 

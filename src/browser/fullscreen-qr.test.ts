@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { consumeFullscreenQr, openFullscreenQr, type FullscreenQrSession } from './fullscreen-qr';
 
 const session: FullscreenQrSession = {
-  text: 'pocket-pt://import/site?v=1&data=secret',
+  text: 'pocket-evo://import/site?v=1&data=secret',
   siteName: 'Example PT',
 };
 

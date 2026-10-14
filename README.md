@@ -1,17 +1,16 @@
-# Pocket Qt 站点导入插件
+# Pocket Evo 站点导入插件
 
-一个用于 Pocket Qt App 快速添加站点的 Chrome 扩展。它可以从已登录的站点读取导入所需的配置，并生成供 Pocket Qt 手机端扫码导入的二维码。
+一个用于 Pocket Evo App 快速添加站点的 Chrome 扩展。它可以从已登录的站点读取导入所需的配置，并生成供 Pocket Evo 手机端扫码导入的二维码。
 
 ## 功能
 
-- 识别 NexusPHP、TNode、mTorrent、SunnyPt、HaiDanPt、Gazelle 和 UNIT3D 架构站点；
-- 读取并整理当前站点的 Cookie 和必要配置；
-- 支持手动修改站点信息和页面信息；
-- 在 Chrome 侧边栏中生成 Pocket Qt 导入二维码。
-
-Gazelle 包括原版音乐站结构和 GazellePW 影视站结构。UNIT3D 使用已登录浏览器的 Cookie 和 User-Agent 读取标准 HTML 清单，不需要额外配置 API Token；识别依据架构指纹和页面结构，不限于特定站点域名。
-
-![Pocket Qt 站点导入插件界面预览](docs/images/pocket-qt-extension-preview.png)
+- 支持 Evo 当前已接入的 NexusPHP、Tnode 和 MTorrent；其他架构识别后明确提示不支持。
+- 从同源导航识别默认资源入口（包括 TTG 的 `/browse.php`），允许添加分类入口。
+- 站点名、入口、标签、凭据按 Evo 限制校验，生成前提示字段错误。
+- MT 单独导入 API Key、UID、Auth、DID、VID；Tnode 不导入临时 CSRF。
+- 不含 Qt 的权重、聚合搜索、置顶和页面标签字段。
+- 二维码采用 `pocket-evo://import/site?v=1&data=…`，JSON 协议 `pocket-evo.site` v1，UTF-8 → raw DEFLATE → Base64URL。
+- 数据为 `site.family/name/address/entries/userAgent/tags/downloadTags/secrets`；凭据仅放 `secrets`。需配合支持 Evo 协议的新版应用。
 
 ## 开发
 

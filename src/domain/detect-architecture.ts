@@ -129,13 +129,13 @@ function scoreNexusPhp(snapshot: PageSnapshot): ScoreResult {
 }
 
 function fixed(id: ArchitectureId, reason: string): DetectionResult {
-  return { id, supported: true, confidence: 'certain', reasons: [reason] };
+  return { id, supported: ['nexusphp', 'tnode', 'mtorrent'].includes(id), confidence: 'certain', reasons: [reason] };
 }
 
 function detectionFromScore(result: ScoreResult): DetectionResult {
   return {
     id: result.id,
-    supported: result.supported,
+    supported: result.supported && ['nexusphp', 'tnode', 'mtorrent'].includes(result.id),
     confidence: result.explicit ? 'certain' : 'likely',
     reasons: result.reasons,
   };

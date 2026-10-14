@@ -1,5 +1,4 @@
 import type { ArchitectureId, PageSnapshot } from './types';
-import { privateSiteForHost } from './private-sites';
 
 export interface DraftPage {
   name: string;
@@ -43,29 +42,18 @@ export function createManualPage(id: ArchitectureId): DraftPage {
 }
 
 export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
-  if (id === 'private') {
-    const site = privateSiteForHost(snapshot.host);
-    return site ? [{ name: '综合', path: site.path, tags: null, selected: true }] : [];
-  }
-  if (id === 'gazelle') {
-    return [
-      { name: '种子', path: '/torrents.php', tags: null, selected: true },
-      { name: '合集', path: '/collages.php', tags: null, selected: true },
-    ];
-  }
-  if (id === 'tnode') {
-    return [{ name: '综合', path: '/torrent/search', tags: null, selected: true }];
-  }
-  if (id === 'sunnypt') {
-    const page = draftPageFromSnapshot(snapshot, '综合');
-    if (page?.path === '/torrents' || page?.path.startsWith('/torrents?')) return [page];
-    return [{ name: '综合', path: '/torrents?category=All', tags: null, selected: true }];
-  }
-  if (id === 'unit3d') {
-    const page = draftPageFromSnapshot(snapshot, '综合');
-    if (page?.path === '/torrents' || page?.path.startsWith('/torrents?')) return [page];
-    return [{ name: '综合', path: '/torrents', tags: null, selected: true }];
-  }
-  const page = draftPageFromSnapshot(snapshot, '综合');
-  return page ? [page] : [];
+  const page = (path: string): DraftPage[] => [{name:'综合',path,tags:null,selected:true}];
+  if (id === 'mtorrent') return page('/browse');
+  if (id === 'tnode') return page('/torrent/search');
+  if (id !== 'nexusphp') return [];
+  const base = new URL(snapshot.url);
+  const candidates = snapshot.links.flatMap(link=> {
+    try {
+      const u = new URL(link.href,base);
+      if (u.origin !== base.origin || !/\/(?:torrents?|browse)(?:\.php)?$/i.test(u.pathname)) return [];
+      return [{path:u.pathname, score: /^(综合|綜合|种子|種子|torrents?|browse|全部)$/i.test(link.text.trim()) ? 10 : 1}];
+    } catch { return []; }
+  });
+  candidates.sort((a,b)=>b.score-a.score);
+  return page(candidates[0]?.path ?? (/\/(?:torrents?|browse)(?:\.php)?$/i.test(base.pathname) ? base.pathname : '/torrents.php'));
 }

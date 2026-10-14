@@ -20,10 +20,10 @@ export interface SiteDraft {
   importUserAgent: boolean;
   tags: string | null;
   downloadTags: string | null;
-  widget: number;
+
   token: string | null;
-  search: boolean;
-  top: boolean | null;
+
+
   fieldWarnings: Record<string, string>;
   alternatives: Record<string, FieldCandidate[]>;
 }
@@ -38,11 +38,6 @@ const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>> 
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
-  haidan: 3,
-  sunnypt: 4,
-  gazelle: 5,
-  unit3d: 6,
-  private: 7,
 };
 
 function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
@@ -61,7 +56,8 @@ function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
     .replace(/\s*[-|｜]\s*(?:首页|home|index)\s*$/i, '')
     .replace(/\s+/g, ' ')
     .trim();
-  return cleaned || snapshot.host;
+  if (/(^|\.)agsvpt\.(cn|com)$/.test(snapshot.host)) return 'AGSVPT';
+  return Array.from(cleaned || snapshot.host).slice(0, 20).join('');
 }
 
 function siteAddress(id: ArchitectureId, snapshot: PageSnapshot): string {
@@ -98,11 +94,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
   let webVisitorId = '';
   let token = '';
 
-  if (detection.id === 'tnode') {
-    const csrf = selectCandidate('csrfToken', snapshot);
-    token = csrf.value;
-    addSelectionMetadata('token', 'X-Csrf-Token', csrf, warnings, alternatives);
-  } else if (detection.id === 'mtorrent') {
+  if (detection.id === 'mtorrent') {
     const uid = selectCandidate('uid', snapshot);
     const loginToken = selectCandidate('webToken', snapshot);
     const deviceId = selectCandidate('webDeviceId', snapshot);
@@ -113,14 +105,10 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     webVisitorId = visitorId.value;
     token = '';
     addSelectionMetadata('passkey', 'UID', uid, warnings, alternatives);
-    addSelectionMetadata('webToken', '网页登录 Token', loginToken, warnings, alternatives);
-    addSelectionMetadata('webDeviceId', 'Device ID', deviceId, warnings, alternatives);
-    addSelectionMetadata('webVisitorId', 'Visitor ID', visitorId, warnings, alternatives);
+    addSelectionMetadata('webToken', 'Auth（可选）', loginToken, warnings, alternatives);
+    addSelectionMetadata('webDeviceId', 'DID（可选）', deviceId, warnings, alternatives);
+    addSelectionMetadata('webVisitorId', 'VID（可选）', visitorId, warnings, alternatives);
     warnings.token = '请前往控制台实验室复制令牌并手动填写';
-  } else if (detection.id === 'haidan') {
-    const uid = selectCandidate('uid', snapshot);
-    token = uid.value;
-    addSelectionMetadata('token', 'UID', uid, warnings, alternatives);
   }
 
   if (!cookie && detection.id !== 'unknown') warnings.cookie ??= '未自动获取 Cookie';
@@ -151,10 +139,10 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     importUserAgent: true,
     tags: siteTags.length > 0 ? siteTags.join(',') : null,
     downloadTags: name,
-    widget: 1,
+
     token: token || null,
-    search: true,
-    top: null,
+
+
     fieldWarnings: warnings,
     alternatives,
   };

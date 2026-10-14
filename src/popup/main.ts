@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import { entryError } from '../domain/evo-entry';
 import { collectSiteDraft } from '../application/collect-site';
 import type { SiteDraft } from '../domain/adapt-site';
 import { encodeImportPayload, QR_ERROR_CORRECTION_LEVEL } from '../domain/payload';
@@ -27,11 +28,6 @@ const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
-  haidan: 3,
-  sunnypt: 4,
-  gazelle: 5,
-  unit3d: 6,
-  private: 7,
 };
 
 function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
@@ -44,7 +40,7 @@ async function drawQr(): Promise<void> {
   if (!canvas) return;
   await QRCode.toCanvas(canvas, state.payload.text, {
     width: 720,
-    margin: 0,
+    margin: 4,
     errorCorrectionLevel: QR_ERROR_CORRECTION_LEVEL,
     color: { dark: '#102a2b', light: '#fffdf6' },
   });
@@ -151,8 +147,6 @@ const actions: PopupActions = {
         case 'importUserAgent': return { ...draft, importUserAgent: Boolean(value) };
         case 'tags': return { ...draft, tags: String(value) || null };
         case 'downloadTags': return { ...draft, downloadTags: String(value) || null };
-        case 'widget': return { ...draft, widget: Number(value) };
-        case 'search': return { ...draft, search: Boolean(value) };
         default: return draft;
       }
     });
@@ -173,12 +167,10 @@ const actions: PopupActions = {
   },
   onAddCustomTag: (value) => {
     const tag = value.trim();
-    console.log('[MovieClaw] onAddCustomTag:', JSON.stringify(tag));
     updateDraft((draft) => {
       const list = splitTags(draft.tags);
       if (tag && !list.includes(tag)) list.push(tag);
       const next = list.length > 0 ? list.join(',') : null;
-      console.log('[MovieClaw] tags now:', JSON.stringify(next));
       return { ...draft, tags: next };
     });
     if (tag) showToast('已添加 ' + tag);
@@ -200,7 +192,11 @@ const actions: PopupActions = {
     void (async () => {
       try {
         const context = await getActivePageContext();
+        const current = currentReady();
+        if (!current || current.sourceOrigin !== context.origin) throw new Error('请在当前站点内添加资源入口');
         const page = draftPageFromSnapshot(await readPageSnapshot(context.tabId), '');
+        const reason = page ? entryError(current.draft.architecture,page.path) : null;
+        if (reason) throw new Error(reason);
         if (!page) throw new Error('未能读取当前页面地址');
         updateDraft((draft) => ({ ...draft, pages: [...draft.pages, page] }));
       } catch (error) {

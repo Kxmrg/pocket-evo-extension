@@ -1,173 +1,28 @@
 import { inflateSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import type { SiteDraft } from './adapt-site';
+import { fixture } from './evo-fixture';
 import { buildImportPayload, encodeImportPayload } from './payload';
-
-function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
-  return {
-    architecture: 'nexusphp',
-    scheme: 0,
-    name: 'Example PT',
-    address: 'https://pt.example.com',
-    cookie: 'uid=1; pass=secret',
-    webToken: null,
-    webDeviceId: null,
-    webVisitorId: null,
-    pages: [
-      { name: '综合', path: '/torrents.php', tags: null, selected: true },
-      { name: '不导入', path: '/torrents.php?cat=9', tags: null, selected: false },
-    ],
-    passkey: null,
-    userAgent: 'Test UA',
-    importUserAgent: true,
-    tags: null,
-    downloadTags: null,
-    widget: 1,
-    token: null,
-    search: true,
-    top: null,
-    fieldWarnings: { cookie: 'UI only' },
-    alternatives: {},
-    ...overrides,
-  };
-}
-
-const expected = {
-  protocol: 'pocket-pt.site',
-  version: 1,
-  site: {
-    scheme: 0,
-    name: 'Example PT',
-    address: 'https://pt.example.com',
-    cookie: 'uid=1; pass=secret',
-    webToken: null,
-    webDeviceId: null,
-    webVisitorId: null,
-    pages: [{ name: '综合', path: '/torrents.php', tags: null }],
-    passkey: null,
-    userAgent: 'Test UA',
-    tags: null,
-    downloadTags: null,
-    widget: 1,
-    token: null,
-    search: true,
-    top: null,
-  },
-};
-
-function randomCookie(length: number): string {
-  let state = 0x12345678;
-  return Array.from({ length }, () => {
-    state = (state * 1_664_525 + 1_013_904_223) >>> 0;
-    return String.fromCharCode(33 + (state % 90));
-  }).join('');
-}
-
-describe('Pocket Qt import payload', () => {
-  it('maps only Flutter SiteConfig fields and selected pages', () => {
-    expect(buildImportPayload(draft())).toEqual(expected);
-  });
-
-  it('always removes a stale token from NexusPHP payloads', () => {
-    expect(buildImportPayload(draft({ token: 'must-not-be-sent' })).site.token).toBeNull();
-  });
-
-  it('never exports a short-lived SunnyPT bearer token', () => {
-    const payload = buildImportPayload(draft({
-      architecture: 'sunnypt', scheme: 4, address: 'https://sunnypt.top',
-      token: 'short-lived-bearer',
-    }));
-    expect(payload.site.scheme).toBe(4);
-    expect(payload.site.token).toBeNull();
-  });
-
-  it('never exports an unnecessary SunnyPT passkey', () => {
-    const payload = buildImportPayload(draft({
-      architecture: 'sunnypt', scheme: 4, address: 'https://sunnypt.top',
-      passkey: 'must-not-be-sent',
-    }));
-    expect(payload.site.passkey).toBeNull();
-  });
-
-  it('exports separate mTorrent web token, UID and access token fields', () => {
-    const payload = buildImportPayload(draft({
-      architecture: 'mtorrent', scheme: 2, address: 'https://api.m-team.cc',
-      cookie: '', webToken: 'web-login-token', webDeviceId: 'device-id', webVisitorId: 'visitor-id', passkey: '295964', token: 'access-token',
-    }));
-    expect(payload.site).toMatchObject({
-      scheme: 2,
-      cookie: '',
-      webToken: 'web-login-token',
-      webDeviceId: 'device-id',
-      webVisitorId: 'visitor-id',
-      passkey: '295964',
-      token: 'access-token',
-    });
-  });
-
-  it('allows optional mTorrent web login fields to remain empty', () => {
-    const payload = buildImportPayload(draft({
-      architecture: 'mtorrent', scheme: 2, address: 'https://api.m-team.cc',
-      cookie: '', webToken: null, webDeviceId: null, webVisitorId: null,
-      passkey: '295964', token: 'access-token',
-    }));
-    expect(payload.site).toMatchObject({
-      webToken: null,
-      webDeviceId: null,
-      webVisitorId: null,
-      passkey: '295964',
-      token: 'access-token',
-    });
-  });
-
-  it('encodes Gazelle without a token or passkey', () => {
-    const encoded = buildImportPayload(draft({
-      architecture: 'gazelle', scheme: 5, address: 'https://dicmusic.com',
-      token: 'unused-token', passkey: 'unused-passkey',
-    }));
-    expect(encoded).toMatchObject({ version: 1, site: { scheme: 5, token: null, passkey: null } });
-  });
-
-  it('encodes UNIT3D scheme 6 without API credentials', () => {
-    const encoded = buildImportPayload(draft({
-      architecture: 'unit3d', scheme: 6, address: 'https://unit3d.example',
-      pages: [{ name: '综合', path: '/torrents', tags: null, selected: true }],
-      token: 'unused-token', passkey: 'unused-passkey',
-    }));
-    expect(encoded.site).toMatchObject({ scheme: 6, token: null, passkey: null });
-  });
-
-  it('encodes Private scheme 7 without API credentials', () => {
-    const encoded = buildImportPayload(draft({
-      architecture: 'private', scheme: 7, address: 'https://hdbits.org',
-      pages: [{ name: '综合', path: '/browse.php', tags: null, selected: true }],
-      token: 'unused-token', passkey: 'unused-passkey',
-    }));
-    expect(encoded.site).toMatchObject({ scheme: 7, token: null, passkey: null });
-  });
-
-  it('omits User-Agent when its import switch is off', () => {
-    expect(buildImportPayload(draft({ importUserAgent: false })).site.userAgent).toBeNull();
-  });
-
-  it('round trips the versioned raw-deflate Base64URL payload', () => {
-    const encoded = encodeImportPayload(draft());
-    expect(encoded.text.startsWith('pocket-pt://import/site?v=1&data=')).toBe(true);
-
-    const data = new URL(encoded.text).searchParams.get('data') ?? '';
-    const base64 = data.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(data.length / 4) * 4, '=');
-    const compressed = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
-    const decoded = JSON.parse(new TextDecoder().decode(inflateSync(compressed)));
-    expect(decoded).toEqual(expected);
-    expect(encoded.sourceBytes).toBeGreaterThan(encoded.compressedBytes);
-  });
-
-  it('encodes data that fits QR low error correction but exceeds medium capacity', () => {
-    expect(() => encodeImportPayload(draft({ cookie: randomCookie(2_100) }))).not.toThrow();
-  });
-
-  it('rejects data that cannot fit a single QR code', () => {
-    expect(() => encodeImportPayload(draft({ cookie: randomCookie(8_000) })))
-      .toThrow('二维码数据过大，请减少种子页面后重试');
-  });
+import type { ArchitectureId, PageSnapshot } from './types';
+describe('Evo QR',()=>{
+ it('exports only Evo fields and shortens AGSVPT display name',()=>{
+  const p=buildImportPayload(fixture());
+  expect(p.protocol).toBe('pocket-evo.site'); expect(p.site.name).toBe('AGSVPT');
+  expect(p.site.entries).toEqual([{name:'综合',path:'/torrents.php'}]);
+  for(const key of ['widget','top','search','scheme','token','pages']) expect(p.site).not.toHaveProperty(key);
+ });
+ it('separates API credentials and preserves multiple MT category entries',()=>{
+  const d=fixture('mtorrent');d.pages.push({name:'电影',path:'/browse/movie',selected:true,tags:null},{name:'官组',path:'/browse?team=44&team=9&team=43',selected:true,tags:null});
+  const p=buildImportPayload(d);expect(p.site.secrets).toEqual({apiKey:'fixture-api',mtUid:'42',webToken:'fixture-auth',webDeviceId:'fixture-did',webVisitorId:'fixture-vid'});expect(p.site.entries).toHaveLength(3);
+  const encoded=encodeImportPayload(d);const data=new URL(encoded.text).searchParams.get('data')!;
+  expect(JSON.parse(new TextDecoder().decode(inflateSync(Uint8Array.from(atob(data.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)))))).toEqual(p);
+ });
+ it('does not export CSRF or stale tokens for NP/Tnode',()=>{
+  for(const id of ['nexusphp','tnode'] as const){const d=fixture(id);d.token='stale'; expect(JSON.stringify(buildImportPayload(d))).not.toContain('stale');}
+ });
+ it('rejects unsupported architectures and oversized payloads before showing a QR',()=>{
+  const d=fixture();d.architecture='gazelle';d.scheme=5;expect(()=>encodeImportPayload(d)).toThrow();
+  const large=fixture();large.cookie=Array.from({length:16000},(_,i)=>String.fromCharCode(33+(i*i%90))).join('');
+  large.cookie=Array.from({length:16000},()=>Math.random().toString(36).slice(2,3)).join('');
+  expect(()=>encodeImportPayload(large)).toThrow(/二维码/);
+ });
 });

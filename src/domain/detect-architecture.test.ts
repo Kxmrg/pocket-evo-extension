@@ -31,7 +31,7 @@ describe('detectArchitecture', () => {
       textSample: 'Powered by NexusPHP UNIT3D Gazelle',
       links: [{ text: 'Legacy', href: `${new URL(url).origin}/details.php?id=1` }],
     }));
-    expect(result).toMatchObject({ id: 'private', supported: true, confidence: 'certain' });
+    expect(result).toMatchObject({ id: 'private', supported: false, confidence: 'certain' });
     expect(result.reasons.join(' ')).toContain(root);
   });
 
@@ -52,7 +52,7 @@ describe('detectArchitecture', () => {
     ['https://passthepopcorn.me/torrents.php', 'gazelle'],
     ['https://broadcasthe.net/collages.php', 'gazelle'],
   ] as const)('recognizes fixed site %s as %s', (url, expected) => {
-    expect(detectArchitecture(snapshot(url))).toMatchObject({ id: expected, supported: true });
+    expect(detectArchitecture(snapshot(url))).toMatchObject({ id: expected, supported: ['nexusphp','tnode','mtorrent'].includes(expected) });
   });
 
   it('recognizes UNIT3D before a coincidental NexusPHP route', () => {
@@ -64,7 +64,7 @@ describe('detectArchitecture', () => {
         { text: 'Legacy', href: 'https://u3.example/torrents.php' },
       ],
     }));
-    expect(result).toMatchObject({ id: 'unit3d', supported: true });
+    expect(result).toMatchObject({ id: 'unit3d', supported: false });
   });
 
   it('recognizes exact UNIT3D product identity without a fixed domain', () => {
@@ -73,7 +73,7 @@ describe('detectArchitecture', () => {
       links: [{ text: 'Torrents', href: 'https://tracker.example/torrents' }],
     }));
 
-    expect(result).toMatchObject({ id: 'unit3d', supported: true, confidence: 'certain' });
+    expect(result).toMatchObject({ id: 'unit3d', supported: false, confidence: 'certain' });
   });
 
   it('recognizes a structurally complete UNIT3D tracker without branding', () => {
@@ -87,7 +87,7 @@ describe('detectArchitecture', () => {
       ],
     }));
 
-    expect(result).toMatchObject({ id: 'unit3d', supported: true, confidence: 'likely' });
+    expect(result).toMatchObject({ id: 'unit3d', supported: false, confidence: 'likely' });
   });
 
   it.each([
@@ -107,7 +107,7 @@ describe('detectArchitecture', () => {
         { text: 'Requests', href: 'https://gazelle.example/requests.php' },
       ],
     }));
-    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
+    expect(result).toMatchObject({ id: 'gazelle', supported: false, confidence: 'likely' });
   });
 
   it('supports GazellePW poster-wall pages as Gazelle', () => {
@@ -115,7 +115,7 @@ describe('detectArchitecture', () => {
       domMarkers: ['body#torrents', 'gazellepw-cover-wall', 'gazellepw-movie-filters'],
     }));
 
-    expect(result).toMatchObject({ id: 'gazelle', supported: true });
+    expect(result).toMatchObject({ id: 'gazelle', supported: false });
   });
 
   it.each([
@@ -123,7 +123,7 @@ describe('detectArchitecture', () => {
     [['btn-series-links', 'btn-torrent-actions']],
   ])('recognizes an HTML-only Gazelle structure: %j', (domMarkers) => {
     const result = detectArchitecture(snapshot('https://fork.example/torrents.php', { domMarkers }));
-    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
+    expect(result).toMatchObject({ id: 'gazelle', supported: false, confidence: 'likely' });
   });
 
   it('does not identify a page as GazellePW from movie filters alone', () => {
@@ -144,7 +144,7 @@ describe('detectArchitecture', () => {
       ],
     }));
 
-    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'certain' });
+    expect(result).toMatchObject({ id: 'gazelle', supported: false, confidence: 'certain' });
   });
 
   it.each([
@@ -170,7 +170,7 @@ describe('detectArchitecture', () => {
       links: [{ text: '种子', href: 'https://sunnypt.top/torrents?category=All' }],
     }));
 
-    expect(result).toMatchObject({ id: 'sunnypt', supported: true, confidence: 'certain' });
+    expect(result).toMatchObject({ id: 'sunnypt', supported: false, confidence: 'certain' });
   });
 
   it('recognizes a NexusPHP route combination without branding', () => {

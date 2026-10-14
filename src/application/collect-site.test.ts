@@ -131,100 +131,6 @@ describe('collectSiteDraft', () => {
     expect(result.draft.fieldWarnings.cookie).toBeUndefined();
   });
 
-  it('collects UNIT3D as a supported Cookie-authenticated draft', async () => {
-    const result = await collectSiteDraft(deps({
-      getContext: async () => ({ url: 'https://blutopia.cc/torrents', origin: 'https://blutopia.cc', hasPermission: true }),
-      readSnapshot: async () => ({
-        ...nexusSnapshot(), url: 'https://blutopia.cc/torrents', origin: 'https://blutopia.cc', host: 'blutopia.cc',
-        title: '资源 - Blutopia', meta: [{ name: 'generator', property: '', content: 'UNIT3D' }],
-        links: [{ text: 'Torrents', href: 'https://blutopia.cc/torrents' }], textSample: '',
-      }),
-      readCookies: async () => [{ name: 'session', value: 'u3-secret', domain: 'blutopia.cc', path: '/', secure: true }],
-    }));
-    expect(result.state).toBe('ready');
-    if (result.state !== 'ready') throw new Error('expected ready result');
-    expect(result.detection).toMatchObject({ id: 'unit3d', supported: true });
-    expect(result.draft).toMatchObject({ architecture: 'unit3d', scheme: 6, name: 'Blutopia', cookie: 'session=u3-secret', token: null, passkey: null });
-    expect(result.draft.pages).toEqual([{ name: '综合', path: '/torrents', tags: null, selected: true }]);
-  });
-
-  it.each([
-    ['https://exoticaz.to/torrents', 'exoticaz.to', 'ExoticaZ', '/torrents'],
-    ['https://filelist.io/browse.php', 'filelist.io', 'FileList', '/browse.php'],
-    ['https://beyond-hd.me/torrents', 'beyond-hd.me', 'BeyondHD', '/torrents'],
-    ['https://hdbits.org/browse.php', 'hdbits.org', 'HDBits', '/browse.php'],
-  ])('collects %s as a Private Cookie-authenticated draft', async (url, host, name, path) => {
-    const origin = new URL(url).origin;
-    const result = await collectSiteDraft(deps({
-      getContext: async () => ({ url, origin, hasPermission: true }),
-      readSnapshot: async () => ({
-        ...nexusSnapshot(), url, origin, host, title: name, meta: [], links: [], textSample: '',
-      }),
-      readCookies: async () => [{ name: 'session', value: 'private-secret', domain: host, path: '/', secure: true }],
-    }));
-
-    expect(result.state).toBe('ready');
-    if (result.state !== 'ready') throw new Error('expected ready result');
-    expect(result.detection).toMatchObject({ id: 'private', supported: true, confidence: 'certain' });
-    expect(result.draft).toMatchObject({
-      architecture: 'private', scheme: 7, name, address: origin,
-      cookie: 'session=private-secret', token: null, passkey: null,
-    });
-    expect(result.draft.pages).toEqual([{ name: '综合', path, tags: null, selected: true }]);
-  });
-
-  it('collects a supported original Gazelle site through detection, adaptation, and page generation', async () => {
-    const result = await collectSiteDraft(deps({
-      getContext: async () => ({
-        url: 'https://dicmusic.com/torrents.php', origin: 'https://dicmusic.com', hasPermission: true,
-      }),
-      readSnapshot: async () => ({
-        ...nexusSnapshot(),
-        url: 'https://dicmusic.com/torrents.php',
-        origin: 'https://dicmusic.com',
-        host: 'dicmusic.com',
-        title: '浏览种子 :: DIC Music',
-        meta: [],
-        domMarkers: ['body#torrents', 'gazelle-grouping-table', 'gazelle-group-row', 'gazelle-torrent-row'],
-        links: [
-          { text: 'Collages', href: 'https://dicmusic.com/collages.php' },
-          { text: 'Requests', href: 'https://dicmusic.com/requests.php' },
-        ],
-      }),
-    }));
-
-    expect(result.state).toBe('ready');
-    if (result.state !== 'ready') throw new Error('expected ready result');
-    expect(result.detection).toMatchObject({ id: 'gazelle', supported: true });
-    expect(result.draft).toMatchObject({ architecture: 'gazelle', scheme: 5, name: 'DIC Music' });
-    expect(result.draft.pages).toEqual([
-      { name: '种子', path: '/torrents.php', tags: null, selected: true },
-      { name: '合集', path: '/collages.php', tags: null, selected: true },
-    ]);
-  });
-
-  it('keeps GazellePW editable as a supported Gazelle site', async () => {
-    const result = await collectSiteDraft(deps({
-      getContext: async () => ({
-        url: 'https://greatposterwall.com/torrents.php', origin: 'https://greatposterwall.com', hasPermission: true,
-      }),
-      readSnapshot: async () => ({
-        ...nexusSnapshot(),
-        url: 'https://greatposterwall.com/torrents.php',
-        origin: 'https://greatposterwall.com',
-        host: 'greatposterwall.com',
-        title: '电影 :: Great Poster Wall',
-        meta: [],
-        domMarkers: ['body#torrents', 'gazellepw-cover-wall', 'gazellepw-movie-filters'],
-      }),
-    }));
-
-    expect(result.state).toBe('ready');
-    if (result.state !== 'ready') throw new Error('expected ready result');
-    expect(result.detection).toMatchObject({ id: 'gazelle', supported: true });
-    expect(result.draft).toMatchObject({ architecture: 'gazelle', scheme: 5, name: 'Great Poster Wall' });
-  });
-
   it('keeps an unrecognized site editable with the collected page data', async () => {
     const result = await collectSiteDraft(deps({
       readSnapshot: async () => ({ ...nexusSnapshot(), meta: [], links: [], textSample: '' }),
@@ -240,7 +146,7 @@ describe('collectSiteDraft', () => {
       address: 'https://pt.example',
       cookie: 'session=secret',
       userAgent: 'Browser UA',
-      pages: [{ name: '综合', path: '/torrents.php', selected: true }],
+      pages: [],
     });
   });
 

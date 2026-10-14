@@ -15,7 +15,7 @@ function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
       { name: '电影', path: '/torrents.php?cat=401', tags: null, selected: true },
     ],
     passkey: null, userAgent: 'Browser UA', importUserAgent: true, tags: null, downloadTags: null,
-    widget: 1, token: null, search: true, top: null, fieldWarnings: {}, alternatives: {},
+    token: null,   fieldWarnings: {}, alternatives: {},
     ...overrides,
   };
 }
@@ -51,13 +51,13 @@ describe('renderPopup', () => {
   it('renders the compact unread home in its intended reading order', () => {
     renderPopup(root, { kind: 'idle' }, actions());
 
-    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket Qt');
+    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket Evo');
     expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v1.0.1');
     expect(root.querySelectorAll('[data-home-guide] li')).toHaveLength(4);
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点，停留在种子列表页面');
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('点击开始读取站点数据');
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('手动修改补充站点信息');
-    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('生成二维码，使用 Pocket Qt 扫码添加站点');
+    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('生成二维码，使用 Pocket Evo 扫码添加站点');
     expect(root.querySelector('[data-home-features]')).toBeNull();
     expect(root.querySelector('[data-home-security]')?.textContent).toContain('仅在本机处理');
     expect(root.querySelector('[data-home-guide]')?.classList).toContain('home-card');
@@ -87,25 +87,14 @@ describe('renderPopup', () => {
     renderPopup(root, state, actions());
     expect(root.querySelectorAll('button')).toHaveLength(1);
     expect(root.querySelector('button')?.textContent).toContain('允许读取本站');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
     expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
-  });
-
-  it('shows UNIT3D as unsupported without a generate action', () => {
-    const id = 'unit3d';
-    const detection: DetectionResult = { id, supported: false, confidence: 'certain', reasons: [`检测到 ${id}`] };
-    renderPopup(root, { kind: 'unsupported', detection }, actions());
-    expect(root.textContent?.toLowerCase()).toContain(id);
-    expect(root.textContent).toContain('暂不支持');
-    expect(root.textContent).not.toContain('检测到');
-    expect(root.querySelector('.reason-list')).toBeNull();
-    expect([...root.querySelectorAll('button')].some((button) => button.textContent?.includes('生成二维码'))).toBe(false);
   });
 
   it('uses the plugin header and omits technical guidance on the read error page', () => {
     renderPopup(root, { kind: 'error', message: '请在普通 HTTP 或 HTTPS 站点中使用' }, actions());
 
-    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
     expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
     expect(root.querySelector('h1')?.textContent).toBe('未能读取站点');
     expect(root.textContent).not.toContain('请在普通 HTTP 或 HTTPS 站点中使用');
@@ -139,7 +128,7 @@ describe('renderPopup', () => {
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('pt.example');
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('NexusPHP');
     expect(root.querySelector('[data-home-guide]')).toBeNull();
-    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
     expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
     expect(root.querySelector('h2')?.textContent).toBe('站点信息');
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
@@ -159,10 +148,10 @@ describe('renderPopup', () => {
     expect([...root.querySelectorAll('.sensitive-panel input')].map((input) => input.id)).toEqual([
       'passkey', 'token', 'webDeviceId', 'webVisitorId', 'webToken',
     ]);
-    expect(root.querySelector('label[for="webToken"]')?.textContent).toBe('Web Login Token');
-    expect(root.querySelector('label[for="webDeviceId"]')?.textContent).toBe('Device ID');
-    expect(root.querySelector('label[for="webVisitorId"]')?.textContent).toBe('Visitor ID');
-    expect(root.querySelector('label[for="token"]')?.textContent).toBe('Access Token');
+    expect(root.querySelector('label[for="webToken"]')?.textContent).toBe('Auth（可选）');
+    expect(root.querySelector('label[for="webDeviceId"]')?.textContent).toBe('DID（可选）');
+    expect(root.querySelector('label[for="webVisitorId"]')?.textContent).toBe('VID（可选）');
+    expect(root.querySelector('label[for="token"]')?.textContent).toBe('API Key');
     expect(root.querySelector('label[for="passkey"]')?.textContent).toBe('UID');
   });
 
@@ -185,33 +174,6 @@ describe('renderPopup', () => {
     expect(root.querySelector('#passkey')).toBeNull();
   });
 
-  it('offers UNIT3D and hides its unused credential fields', () => {
-    const handlers = actions();
-    renderPopup(root, {
-      kind: 'ready',
-      draft: draft({ architecture: 'unit3d', scheme: 6, token: 'unused', passkey: 'unused' }),
-      errors: {}, revealed: new Set(),
-    }, handlers);
-
-    expect(root.querySelector('[data-architecture-option="unit3d"]')?.textContent).toContain('UNIT3D');
-    expect(root.querySelector('#token')).toBeNull();
-    expect(root.querySelector('#passkey')).toBeNull();
-    root.querySelector<HTMLButtonElement>('[data-architecture-option="unit3d"]')?.click();
-    expect(handlers.onArchitectureChange).toHaveBeenCalledWith('unit3d');
-  });
-
-  it('offers Private and hides token and passkey fields', () => {
-    renderPopup(root, {
-      kind: 'ready',
-      draft: draft({ architecture: 'private', scheme: 7, address: 'https://hdbits.org' }),
-      errors: {}, revealed: new Set(),
-    }, actions());
-
-    expect(root.querySelector('[data-architecture-option="private"]')?.textContent).toContain('Private');
-    expect(root.querySelector('#token')).toBeNull();
-    expect(root.querySelector('#passkey')).toBeNull();
-  });
-
   it('shows an enabled User-Agent import switch directly below User-Agent', () => {
     const handlers = actions();
     renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, handlers);
@@ -223,18 +185,6 @@ describe('renderPopup', () => {
 
     toggle?.click();
     expect(handlers.onFieldChange).toHaveBeenCalledWith('importUserAgent', false);
-  });
-
-  it('shows SunnyPt as supported and hides token and passkey inputs', () => {
-    renderPopup(root, {
-      kind: 'ready',
-      draft: draft({ architecture: 'sunnypt', scheme: 4, address: 'https://sunnypt.top' }),
-      errors: {}, revealed: new Set(), sourceOrigin: 'https://sunnypt.top',
-    }, actions());
-
-    expect(root.querySelector('[data-architecture-option="sunnypt"]')?.textContent).toContain('SunnyPt');
-    expect(root.querySelector('#token')).toBeNull();
-    expect(root.querySelector('#passkey')).toBeNull();
   });
 
   it('explains how to separate multiple downloader tags', () => {
@@ -326,32 +276,14 @@ describe('renderPopup', () => {
     expect((root.querySelector('#cookie') as HTMLInputElement).type).toBe('text');
   });
 
-  it('keeps advanced settings open when aggregate search rerenders the form', () => {
-    const handlers = actions();
-    let readyState: Extract<PopupState, { kind: 'ready' }> = {
-      kind: 'ready', draft: draft(), errors: {}, revealed: new Set(),
-    };
-    handlers.onFieldChange = vi.fn((field, value) => {
-      if (field === 'search') readyState = { ...readyState, draft: { ...readyState.draft, search: Boolean(value) } };
-      renderPopup(root, readyState, handlers);
-    });
-    renderPopup(root, readyState, handlers);
-    const advanced = root.querySelector<HTMLDetailsElement>('details.advanced');
-    if (advanced) advanced.open = true;
-
-    root.querySelector<HTMLInputElement>('#search')?.click();
-
-    expect(root.querySelector<HTMLDetailsElement>('details.advanced')?.open).toBe(true);
-  });
-
   it('offers full-browser QR display above the back action and shows scan guidance', () => {
     const handlers = actions();
     renderPopup(root, {
-      kind: 'qr', draft: draft(), payload: { text: 'pocket-pt://import/site?v=1&data=x', sourceBytes: 320, compressedBytes: 180 },
+      kind: 'qr', draft: draft(), payload: { text: 'pocket-evo://import/site?v=1&data=x', sourceBytes: 320, compressedBytes: 180 },
     }, handlers);
     expect(root.querySelector('#qr-canvas')).not.toBeNull();
-    expect(root.querySelector('#qr-canvas')?.getAttribute('aria-label')).toBe('Pocket Qt 站点导入二维码');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
+    expect(root.querySelector('#qr-canvas')?.getAttribute('aria-label')).toBe('Pocket Evo 站点导入二维码');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
     expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
     expect(root.querySelector('.payload-meta')).toBeNull();
     const siteInfo = root.querySelector('[data-qr-site-info]');
@@ -363,7 +295,7 @@ describe('renderPopup', () => {
     expect(siteInfo?.textContent).toContain('https://pt.example');
     expect(root.textContent).not.toContain('180 B');
     expect(root.textContent).toContain('二维码包含当前站点登录凭据');
-    expect(root.textContent).toContain('如果扫码失败，请拖拽放大二维码或全屏显示');
+    expect(root.textContent).toContain('识别困难时请全屏显示');
     const fullscreen = root.querySelector<HTMLButtonElement>('[data-action="fullscreen"]');
     const back = root.querySelector<HTMLButtonElement>('[data-action="back"]');
     expect(fullscreen?.textContent).toContain('全屏显示');

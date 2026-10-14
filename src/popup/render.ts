@@ -48,7 +48,7 @@ const architectureNames: Record<ArchitectureId, string> = {
 const PROJECT_URL = 'https://kxmrg.com/';
 const LICENSE_URL = 'https://pocket.kxmrg.com/user/licenses';
 const UPDATE_URL = 'https://github.com/Kxmrg/pocket-qt-extension';
-const PLUGIN_NAME = 'Pocket Qt 站点导入插件';
+const PLUGIN_NAME = 'Pocket Evo 站点导入插件';
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
@@ -146,7 +146,7 @@ function credentialField(
 }
 
 function architectureSelect(draft: SiteDraft, errors: Record<string, string>): string {
-  const supported: ArchitectureId[] = ['nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'gazelle', 'unit3d', 'private'];
+  const supported: ArchitectureId[] = ['nexusphp', 'tnode', 'mtorrent'];
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
@@ -174,21 +174,21 @@ function pageRows(draft: SiteDraft): string {
 
 function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
-  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? 'Access Token' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
+  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? 'API Key' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
   const cookieLabel = 'Cookie';
   const cookieField = draft.architecture === 'mtorrent'
     ? ''
     : credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state);
   const webTokenField = draft.architecture === 'mtorrent'
-    ? credentialField('webToken', 'Web Login Token', draft.webToken, 'webToken', state)
+    ? credentialField('webToken', 'Auth（可选）', draft.webToken, 'webToken', state)
     : '';
   const webDeviceIdField = draft.architecture === 'mtorrent'
-    ? credentialField('webDeviceId', 'Device ID', draft.webDeviceId, 'webDeviceId', state)
+    ? credentialField('webDeviceId', 'DID（可选）', draft.webDeviceId, 'webDeviceId', state)
     : '';
   const webVisitorIdField = draft.architecture === 'mtorrent'
-    ? credentialField('webVisitorId', 'Visitor ID', draft.webVisitorId, 'webVisitorId', state)
+    ? credentialField('webVisitorId', 'VID（可选）', draft.webVisitorId, 'webVisitorId', state)
     : '';
-  const tokenField = draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
+  const tokenField = draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
   const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
@@ -225,9 +225,8 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
       <details class="panel advanced"><summary><span>高级设置</span>${icon('chevron')}</summary>
         <div class="advanced-body">
           ${tagPicker(draft.tags)}
-          ${regularField('download-tags', '下载器标签', draft.downloadTags ?? '', 'downloadTags', { placeholder: '多个标签用英文逗号分隔' })}
-          ${regularField('widget', '权重', draft.widget, 'widget', { type: 'number', error: errors.widget })}
-          <div class="check-field"><input id="search" data-field="search" type="checkbox" ${draft.search ? 'checked' : ''}><label for="search">参与聚合搜索</label></div>
+          ${errorFor(errors, 'tags')}
+          ${regularField('download-tags', '下载器标签', draft.downloadTags ?? '', 'downloadTags', { placeholder: '多个标签用英文逗号分隔', error: errors.downloadTags })}
         </div>
       </details>
       ${errors.payload ? `<p class="payload-error" data-payload-error role="alert">${escapeHtml(errors.payload)}</p>` : ''}
@@ -240,7 +239,7 @@ function homeView(): string {
   return `<div class="shell home-shell">
     <section class="home-brand" data-home-brand data-home-section="brand">
       <span class="home-brand-mark" aria-hidden="true">P</span>
-      <h1>Pocket Qt</h1>
+      <h1>Pocket Evo</h1>
       <p>站点导入插件 <strong>v${escapeHtml(extensionVersion())}</strong></p>
     </section>
     <nav class="resource-links" data-home-section="links" aria-label="项目相关链接">
@@ -254,7 +253,7 @@ function homeView(): string {
         <li><span>1</span><strong>打开并登录 PT 站点，停留在种子列表页面</strong></li>
         <li><span>2</span><strong>点击开始读取站点数据</strong></li>
         <li><span>3</span><strong>手动修改补充站点信息</strong></li>
-        <li><span>4</span><strong>生成二维码，使用 Pocket Qt 扫码添加站点</strong></li>
+        <li><span>4</span><strong>生成二维码，使用 Pocket Evo 扫码添加站点</strong></li>
       </ol>
     </section>
     <section class="home-card security-card" data-home-security data-home-section="security">
@@ -277,7 +276,7 @@ function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'rea
   } else if (state.kind === 'error') {
     root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
   } else {
-    root.innerHTML = `<div class="shell qr-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div><dl class="qr-site-info" data-qr-site-info><div><dt>架构</dt><dd>${escapeHtml(architectureNames[state.draft.architecture])}</dd></div><div><dt>站点名称</dt><dd>${escapeHtml(state.draft.name)}</dd></div><div><dt>地址</dt><dd title="${escapeHtml(state.draft.address)}">${escapeHtml(state.draft.address)}</dd></div></dl></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><aside class="scan-note" role="note">如果扫码失败，请拖拽放大二维码或全屏显示。</aside><div class="qr-actions"><button class="primary" type="button" data-action="fullscreen">全屏显示</button><button class="secondary" type="button" data-action="back">返回修改</button></div></div>`;
+    root.innerHTML = `<div class="shell qr-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Evo 站点导入二维码"></canvas></div><dl class="qr-site-info" data-qr-site-info><div><dt>架构</dt><dd>${escapeHtml(architectureNames[state.draft.architecture])}</dd></div><div><dt>站点名称</dt><dd>${escapeHtml(state.draft.name)}</dd></div><div><dt>地址</dt><dd title="${escapeHtml(state.draft.address)}">${escapeHtml(state.draft.address)}</dd></div></dl></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><aside class="scan-note" role="note">识别困难时请全屏显示。</aside><div class="qr-actions"><button class="primary" type="button" data-action="fullscreen">全屏显示</button><button class="secondary" type="button" data-action="back">返回修改</button></div></div>`;
   }
 }
 
@@ -350,9 +349,7 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   const tagAddButton = root.querySelector<HTMLButtonElement>('[data-action="add-tag"]');
   const commitCustomTag = () => {
     const value = tagCustomInput?.value.trim() ?? '';
-    console.log('[MovieClaw] add-tag clicked, value=', JSON.stringify(value));
     if (value) actions.onAddCustomTag(value);
-    else console.log('[MovieClaw] add-tag ignored: empty input');
   };
   tagAddButton?.addEventListener('click', commitCustomTag);
   tagCustomInput?.addEventListener('keydown', (event) => {

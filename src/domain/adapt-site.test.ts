@@ -28,7 +28,7 @@ describe('adaptSite', () => {
     expect(draft).toMatchObject({
       architecture: 'nexusphp', scheme: 0, name: 'Example PT',
       address: 'https://pt.example', cookie: 'session=secret',
-      token: null, widget: 1, search: true,
+      token: null,
     });
     expect(draft.pages[0]?.path).toBe('/torrents.php');
   });
@@ -47,7 +47,7 @@ describe('adaptSite', () => {
       meta: [{ name: 'csrf-token', property: '', content: 'csrf-secret' }],
       links: [{ text: '下载', href: 'https://zhuque.in/api/torrent/download/7/pass-key' }],
     }));
-    expect(draft).toMatchObject({ scheme: 1, name: 'ZhuQue', address: 'https://zhuque.in', cookie: 'session=secret', token: 'csrf-secret', passkey: 'pass-key' });
+    expect(draft).toMatchObject({ scheme: 1, name: 'ZhuQue', address: 'https://zhuque.in', cookie: 'session=secret', token: null, passkey: 'pass-key' });
   });
 
   it.each([
@@ -76,67 +76,6 @@ describe('adaptSite', () => {
     expect(draft.fieldWarnings.token).toBe('请前往控制台实验室复制令牌并手动填写');
   });
 
-  it('maps HaiDan profile UID into token and retains the complete Cookie header', () => {
-    const draft = adaptSite(input('haidan', 'https://haidan.cc/torrents.php', {
-      links: [{ text: '资料', href: 'https://haidan.cc/userdetails.php?id=42' }],
-    }));
-    expect(draft).toMatchObject({ scheme: 3, address: 'https://haidan.cc', cookie: 'session=secret', token: '42' });
-  });
-
-  it('maps SunnyPT to scheme 4 and keeps only the browser Cookie', () => {
-    const draft = adaptSite(input('sunnypt', 'https://sunnypt.top/torrents?category=All', {
-      title: 'SUNNYPT',
-    }));
-    expect(draft).toMatchObject({
-      architecture: 'sunnypt', scheme: 4, name: 'SUNNYPT',
-      address: 'https://sunnypt.top', cookie: 'session=secret', token: null,
-    });
-    expect(draft.pages).toEqual([
-      { name: '综合', path: '/torrents?category=All', tags: null, selected: true },
-    ]);
-  });
-
-  it('maps Gazelle to scheme 5, using the final title segment as its site name', () => {
-    const gazelle = adaptSite(input('gazelle', 'https://dicmusic.com/torrents.php', {
-      title: '浏览种子 :: DIC Music',
-    }));
-    expect(gazelle).toMatchObject({
-      architecture: 'gazelle', scheme: 5, name: 'DIC Music', token: null, passkey: null, importUserAgent: true,
-    });
-    expect(gazelle.pages).toEqual([
-      { name: '种子', path: '/torrents.php', tags: null, selected: true },
-      { name: '合集', path: '/collages.php', tags: null, selected: true },
-    ]);
-  });
-
-  it('maps UNIT3D to scheme 6 with Cookie and the current torrents query', () => {
-    const unit3d = adaptSite(input('unit3d', 'https://blutopia.cc/torrents?category=movie', {
-      title: '资源 - Blutopia',
-    }));
-
-    expect(unit3d).toMatchObject({
-      architecture: 'unit3d', scheme: 6, name: 'Blutopia',
-      cookie: 'session=secret', token: null, passkey: null, importUserAgent: true,
-    });
-    expect(unit3d.pages).toEqual([
-      { name: '综合', path: '/torrents?category=movie', tags: null, selected: true },
-    ]);
-  });
-
-  it.each([
-    ['https://exoticaz.to/', 'ExoticaZ', '/torrents'],
-    ['https://filelist.io/', 'FileList', '/browse.php'],
-    ['https://beyond-hd.me/', 'BeyondHD', '/torrents'],
-    ['https://hdbits.org/', 'HDBits', '/browse.php'],
-  ] as const)('maps Private site %s to scheme 7 and its canonical page', (url, name, path) => {
-    const draft = adaptSite(input('private', url, { title: `${name} - Home` }));
-    expect(draft).toMatchObject({
-      architecture: 'private', scheme: 7, name, cookie: 'session=secret',
-      token: null, passkey: null, importUserAgent: true,
-    });
-    expect(draft.pages).toEqual([{ name: '综合', path, tags: null, selected: true }]);
-  });
-
   it('auto-fills site tags from categories and download tags from the site name', () => {
     const draft = adaptSite(input('nexusphp', 'https://pt.example/torrents.php', {
       title: 'Example PT - 首页',
@@ -154,9 +93,9 @@ describe('adaptSite', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
     expect(draft.fieldWarnings).toMatchObject({
       passkey: '未自动获取 UID',
-      webToken: '未自动获取 网页登录 Token',
-      webDeviceId: '未自动获取 Device ID',
-      webVisitorId: '未自动获取 Visitor ID',
+      webToken: '未自动获取 Auth（可选）',
+      webDeviceId: '未自动获取 DID（可选）',
+      webVisitorId: '未自动获取 VID（可选）',
       token: '请前往控制台实验室复制令牌并手动填写',
     });
   });
