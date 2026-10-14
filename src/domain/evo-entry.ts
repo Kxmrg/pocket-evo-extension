@@ -41,6 +41,8 @@ export function validEntry(architecture: ArchitectureId, path: string): boolean 
       return value.more == null || typeof value.more === 'boolean';
     } catch { return false; }
   }
+  if (architecture === 'haidan') return u.pathname === '/torrents.php' && [...u.searchParams.keys()].every(k => new Set(['cat','spstate','resolutionType','movieCodeCType','audioCodeCType','mediaType','yearType','areaType','langType','styleType','search','search_area','search_mode','inclbookmarked','incldead','allsec','sort','type']).has(k));
+  if (architecture === 'sunnypt') return u.pathname === '/torrents' && [...u.searchParams.keys()].every(k => new Set(['category','tmdbId','keyword','resetIndex','section','promotion','sort_by','sort_order','added_after','added_before','bookmarked','health','max_completed','max_leechers','max_seeders','max_size','min_completed','min_leechers','min_seeders','min_size','owner']).has(k));
   return architecture === 'nexusphp';
 }
 

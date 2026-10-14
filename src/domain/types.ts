@@ -1,4 +1,5 @@
 export type ArchitectureId =
+  | 'api'
   | 'nexusphp'
   | 'tnode'
   | 'mtorrent'

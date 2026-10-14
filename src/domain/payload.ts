@@ -11,7 +11,7 @@ export function buildImportPayload(draft: SiteDraft) {
   if (!validation.valid) throw new Error(Object.values(validation.errors)[0]);
   const mt = draft.architecture === 'mtorrent';
   return { protocol: 'pocket-evo.site', version: 1, site: {
-    family: draft.architecture, name: draft.name.trim(), address: draft.address.trim(),
+    family: draft.architecture === 'nexusphp' ? 'nexusphp' : 'api', name: draft.name.trim(), address: draft.address.trim(),
     entries: draft.pages.filter(p=>p.selected).map(p=>({name:p.name.trim(),path:p.path})),
     ...(draft.importUserAgent && draft.userAgent ? {userAgent:draft.userAgent} : {}),
     ...(draft.tags ? {tags:splitTags(draft.tags)} : {}),

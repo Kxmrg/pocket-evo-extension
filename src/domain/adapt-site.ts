@@ -38,6 +38,8 @@ const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>> 
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
+  haidan: 3,
+  sunnypt: 4,
 };
 
 function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {

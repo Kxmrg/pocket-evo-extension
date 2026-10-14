@@ -1,3 +1,4 @@
+import { apiProtocol } from './api-protocol';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
 import { privateSiteForHost } from './private-sites';
 
@@ -129,13 +130,13 @@ function scoreNexusPhp(snapshot: PageSnapshot): ScoreResult {
 }
 
 function fixed(id: ArchitectureId, reason: string): DetectionResult {
-  return { id, supported: ['nexusphp', 'tnode', 'mtorrent'].includes(id), confidence: 'certain', reasons: [reason] };
+  return { id, supported: ['nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt'].includes(id), confidence: 'certain', reasons: [reason] };
 }
 
 function detectionFromScore(result: ScoreResult): DetectionResult {
   return {
     id: result.id,
-    supported: result.supported && ['nexusphp', 'tnode', 'mtorrent'].includes(result.id),
+    supported: result.supported && ['nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt'].includes(result.id),
     confidence: result.explicit ? 'certain' : 'likely',
     reasons: result.reasons,
   };
@@ -144,12 +145,8 @@ function detectionFromScore(result: ScoreResult): DetectionResult {
 export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   const privateSite = privateSiteForHost(snapshot.host);
   if (privateSite) return fixed('private', `固定 Private 域名：${privateSite.root}`);
-  if (isHost(snapshot.host, 'zhuque.in')) return fixed('tnode', '固定域名：zhuque.in');
-  if (isHost(snapshot.host, 'm-team.cc') || isHost(snapshot.host, 'm-team.io')) {
-    return fixed('mtorrent', '固定域名：M-Team');
-  }
-  if (isHost(snapshot.host, 'haidan.cc')) return fixed('haidan', '固定域名：haidan.cc');
-  if (isHost(snapshot.host, 'sunnypt.top')) return fixed('sunnypt', '固定域名：sunnypt.top');
+  const api = apiProtocol(snapshot.origin);
+  if (api) return fixed(api, '独立架构站点：按域名识别');
   if (isHost(snapshot.host, 'dicmusic.com')) return fixed('gazelle', '固定域名：dicmusic.com');
   if (isHost(snapshot.host, 'greatposterwall.com')) return fixed('gazelle', '固定域名：greatposterwall.com');
   if (isHost(snapshot.host, 'passthepopcorn.me')) return fixed('gazelle', '固定域名：passthepopcorn.me');

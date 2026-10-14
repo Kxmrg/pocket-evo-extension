@@ -1,3 +1,4 @@
+import { independentApis } from '../domain/api-protocol';
 import type { CollectionResult } from '../application/collect-site';
 import type { SiteDraft } from '../domain/adapt-site';
 import type { EncodedPayload } from '../domain/payload';
@@ -35,10 +36,11 @@ export interface PopupActions {
 
 const architectureNames: Record<ArchitectureId, string> = {
   nexusphp: 'NexusPHP',
-  tnode: 'TNode',
-  mtorrent: 'mTorrent',
-  haidan: 'HaiDanPt',
-  sunnypt: 'SunnyPt',
+  api: '独立架构站点',
+  tnode: '独立架构站点',
+  mtorrent: '独立架构站点',
+  haidan: '独立架构站点',
+  sunnypt: '独立架构站点',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
   private: 'Private',
@@ -146,11 +148,12 @@ function credentialField(
 }
 
 function architectureSelect(draft: SiteDraft, errors: Record<string, string>): string {
-  const supported: ArchitectureId[] = ['nexusphp', 'tnode', 'mtorrent'];
+  const category = independentApis.has(draft.architecture) ? 'api' : draft.architecture;
+  const supported: ArchitectureId[] = ['nexusphp', 'api'];
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
-  ].map((id) => `<button type="button" class="architecture-option ${draft.architecture === id ? 'is-selected' : ''}" data-architecture-option="${id}" role="option" aria-selected="${draft.architecture === id}"><span>${draft.architecture === id ? '✓' : ''}</span>${escapeHtml(architectureNames[id])}</button>`).join('');
+  ].map((id) => `<button type="button" class="architecture-option ${category === id ? 'is-selected' : ''}" data-architecture-option="${id}" role="option" aria-selected="${category === id}"><span>${category === id ? '✓' : ''}</span>${escapeHtml(architectureNames[id])}</button>`).join('');
   return `<div class="field ${errors.architecture ? 'has-error' : ''}">
     <label id="architecture-label">站点架构</label>
     <div class="architecture-control">
@@ -188,7 +191,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const webVisitorIdField = draft.architecture === 'mtorrent'
     ? credentialField('webVisitorId', 'VID（可选）', draft.webVisitorId, 'webVisitorId', state)
     : '';
-  const tokenField = draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
+  const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
   const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'

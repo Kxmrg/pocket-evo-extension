@@ -1,3 +1,4 @@
+import { apiProtocol, independentApis } from '../domain/api-protocol';
 import QRCode from 'qrcode';
 import { entryError } from '../domain/evo-entry';
 import { collectSiteDraft } from '../application/collect-site';
@@ -28,6 +29,8 @@ const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
+  haidan: 3,
+  sunnypt: 4,
 };
 
 function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
@@ -115,7 +118,8 @@ const actions: PopupActions = {
   onRetry: () => { void loadSite(); },
   onArchitectureChange: (architecture: ArchitectureId) => {
     updateDraft((draft) => {
-      const pages = draft.pages.length > 0 ? draft.pages : [{
+      if (architecture === 'api') architecture = apiProtocol(draft.address) ?? 'api';
+      const pages = draft.pages.length > 0 ? draft.pages.map(page => ({ ...page, path: page.path === createManualPage(draft.architecture).path ? createManualPage(architecture).path : page.path })) : [{
         ...createManualPage(architecture), name: '综合',
       }];
       return {
@@ -136,7 +140,11 @@ const actions: PopupActions = {
     updateDraft((draft) => {
       switch (field) {
         case 'name': return { ...draft, name: String(value) };
-        case 'address': return { ...draft, address: String(value) };
+        case 'address': {
+          const address = String(value);
+          const architecture = independentApis.has(draft.architecture) ? apiProtocol(address) ?? 'api' : draft.architecture;
+          return { ...draft, address, architecture, scheme: schemeByArchitecture[architecture] ?? null, pages: draft.pages.map(page => ({ ...page, path: page.path === createManualPage(draft.architecture).path ? createManualPage(architecture).path : page.path })) };
+        }
         case 'cookie': return { ...draft, cookie: String(value), fieldWarnings: { ...draft.fieldWarnings, cookie: '' } };
         case 'webToken': return { ...draft, webToken: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webToken: '' } };
         case 'webDeviceId': return { ...draft, webDeviceId: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webDeviceId: '' } };

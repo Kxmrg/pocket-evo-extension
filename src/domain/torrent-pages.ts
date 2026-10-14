@@ -45,6 +45,8 @@ export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot):
   const page = (path: string): DraftPage[] => [{name:'综合',path,tags:null,selected:true}];
   if (id === 'mtorrent') return page('/browse');
   if (id === 'tnode') return page('/torrent/search');
+  if (id === 'haidan') return page('/torrents.php');
+  if (id === 'sunnypt') return page('/torrents?category=All');
   if (id !== 'nexusphp') return [];
   const base = new URL(snapshot.url);
   const candidates = snapshot.links.flatMap(link=> {

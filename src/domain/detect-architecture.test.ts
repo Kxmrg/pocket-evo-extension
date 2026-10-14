@@ -52,7 +52,7 @@ describe('detectArchitecture', () => {
     ['https://passthepopcorn.me/torrents.php', 'gazelle'],
     ['https://broadcasthe.net/collages.php', 'gazelle'],
   ] as const)('recognizes fixed site %s as %s', (url, expected) => {
-    expect(detectArchitecture(snapshot(url))).toMatchObject({ id: expected, supported: ['nexusphp','tnode','mtorrent'].includes(expected) });
+    expect(detectArchitecture(snapshot(url))).toMatchObject({ id: expected, supported: ['nexusphp','tnode','mtorrent','haidan','sunnypt'].includes(expected) });
   });
 
   it('recognizes UNIT3D before a coincidental NexusPHP route', () => {
@@ -170,7 +170,7 @@ describe('detectArchitecture', () => {
       links: [{ text: '种子', href: 'https://sunnypt.top/torrents?category=All' }],
     }));
 
-    expect(result).toMatchObject({ id: 'sunnypt', supported: false, confidence: 'certain' });
+    expect(result).toMatchObject({ id: 'sunnypt', supported: true, confidence: 'certain' });
   });
 
   it('recognizes a NexusPHP route combination without branding', () => {

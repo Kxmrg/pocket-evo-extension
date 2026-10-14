@@ -140,8 +140,8 @@ describe('renderPopup', () => {
       architecture: 'mtorrent', scheme: 2, cookie: '', webToken: 'web-token',
       webDeviceId: 'device-id', webVisitorId: 'visitor-id', passkey: '295964',
     }), errors: {}, revealed: new Set(), sourceOrigin: 'https://kp.m-team.cc' }, actions());
-    expect(root.querySelector('[data-architecture-option="mtorrent"]')?.textContent).toContain('mTorrent');
-    expect(root.querySelector('[data-architecture-option="tnode"]')?.textContent).toContain('TNode');
+    expect(root.querySelector('[data-architecture-option="api"]')?.textContent).toContain('独立架构站点');
+    expect(root.querySelector('[data-architecture-option="tnode"]')).toBeNull();
     expect(root.textContent).not.toContain('M-Team');
     expect(root.textContent).not.toContain('朱雀');
     expect(root.querySelector('#cookie')).toBeNull();
@@ -239,8 +239,8 @@ describe('renderPopup', () => {
     trigger?.click();
     expect(trigger?.getAttribute('aria-expanded')).toBe('true');
     expect(menu?.hidden).toBe(false);
-    root.querySelector<HTMLButtonElement>('[data-architecture-option="tnode"]')?.click();
-    expect(handlers.onArchitectureChange).toHaveBeenCalledWith('tnode');
+    root.querySelector<HTMLButtonElement>('[data-architecture-option="api"]')?.click();
+    expect(handlers.onArchitectureChange).toHaveBeenCalledWith('api');
     expect(menu?.hidden).toBe(true);
   });
 
