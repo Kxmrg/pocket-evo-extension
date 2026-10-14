@@ -2,6 +2,8 @@ import { selectCandidate, type FieldCandidate } from './candidates';
 import { extractTorrentPages, type DraftPage } from './torrent-pages';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
 import { privateSiteForHost } from './private-sites';
+import { extractSiteCategories } from './site-categories';
+import { mapCategoriesToTags } from './site-tags';
 
 export interface SiteDraft {
   architecture: ArchitectureId;
@@ -127,10 +129,13 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     if (passkey.alternatives.length > 0) alternatives.passkey = passkey.alternatives;
   }
 
+  const name = detection.id === 'tnode' ? 'ZhuQue' : siteName(snapshot, detection.id);
+  const categories = extractSiteCategories(snapshot);
+  const siteTags = mapCategoriesToTags(categories);
   return {
     architecture: detection.id,
     scheme: schemeMap[detection.id] ?? null,
-    name: detection.id === 'tnode' ? 'ZhuQue' : siteName(snapshot, detection.id),
+    name,
     address: siteAddress(detection.id, snapshot),
     cookie,
     webToken: webToken || null,
@@ -144,8 +149,8 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
         : passkey.value || null,
     userAgent: snapshot.userAgent || null,
     importUserAgent: true,
-    tags: null,
-    downloadTags: null,
+    tags: siteTags.length > 0 ? siteTags.join(',') : null,
+    downloadTags: name,
     widget: 1,
     token: token || null,
     search: true,

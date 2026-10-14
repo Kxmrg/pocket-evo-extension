@@ -220,3 +220,17 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
+
+.tag-field .tag-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tag-chip { padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); color: var(--text-secondary); font-size: 12px; font-weight: 650; cursor: pointer; transition: border-color .15s ease, background .15s ease, color .15s ease; }
+.tag-chip:hover { border-color: var(--primary); }
+.tag-chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.tag-chip.custom { cursor: default; display: inline-flex; align-items: center; gap: 6px; }
+.tag-remove { border: none; background: transparent; color: inherit; cursor: pointer; font-size: 15px; line-height: 1; padding: 0; opacity: .8; }
+.tag-remove:hover { opacity: 1; }
+.tag-custom { display: flex; gap: 8px; }
+.tag-custom input { flex: 1; min-height: 40px; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); color: var(--text); background: var(--surface); font-size: 13px; }
+.tag-custom input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(40, 98, 220, .1); outline: none; }
+.tag-add { padding: 8px 14px; border: none; border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+.tag-add:hover { filter: brightness(1.05); }
+.tag-field .tag-custom-label { display: block; margin: 0 0 7px; color: var(--text-secondary); font-size: 12px; font-weight: 650; }

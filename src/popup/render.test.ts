@@ -24,6 +24,7 @@ function actions(): PopupActions {
   return {
     onRead: vi.fn(), onRefresh: vi.fn(), onRequestPermission: vi.fn(), onRetry: vi.fn(), onArchitectureChange: vi.fn(),
     onFieldChange: vi.fn(), onToggleCredential: vi.fn(),
+    onTagToggle: vi.fn(), onTagRemove: vi.fn(), onAddCustomTag: vi.fn(),
     onPageChange: vi.fn(), onPageRemove: vi.fn(), onPageAddCurrent: vi.fn(), onPageAddManual: vi.fn(),
     onGenerate: vi.fn(), onFullscreen: vi.fn(), onBack: vi.fn(),
   };
@@ -239,6 +240,42 @@ describe('renderPopup', () => {
   it('explains how to separate multiple downloader tags', () => {
     renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, actions());
     expect(root.querySelector<HTMLInputElement>('#download-tags')?.placeholder).toBe('多个标签用英文逗号分隔');
+  });
+  it('renders built-in site tags as toggleable chips plus custom tags', () => {
+    renderPopup(root, { kind: 'ready', draft: draft({ tags: 'MOVIE,TV,CUSTOM' }), errors: {}, revealed: new Set() }, actions());
+    const chips = Array.from(root.querySelectorAll<HTMLElement>('.tag-chip'));
+    const builtIn = chips.filter((chip) => chip.dataset.tagToggle);
+    expect(builtIn.map((chip) => chip.dataset.tagToggle)).toEqual(['MOVIE', 'TV', 'MUSIC', 'GAME', 'AUDIO', '9KG', 'BOOK', 'COMICS', 'DOCUMENTARY', 'CARTOON', 'VARIETY SHOW', 'MV', 'MAC', 'SPORTS', 'SOFTWARE']);
+    const onChips = builtIn.filter((chip) => chip.classList.contains('on')).map((chip) => chip.dataset.tagToggle);
+    expect(onChips).toEqual(['MOVIE', 'TV']);
+    expect(root.querySelector('[data-tag-remove="CUSTOM"]')).not.toBeNull();
+    expect(root.querySelector<HTMLInputElement>('#tag-custom-input')).not.toBeNull();
+  });
+  it('wires the custom tag input and add button to onAddCustomTag', () => {
+    const handlers = actions();
+    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, handlers);
+    const input = root.querySelector<HTMLInputElement>('#tag-custom-input') as HTMLInputElement;
+    input.value = 'FOO';
+    (root.querySelector('[data-action="add-tag"]') as HTMLButtonElement).click();
+    expect(handlers.onAddCustomTag).toHaveBeenCalledWith('FOO');
+  });
+  it('adds a custom tag end-to-end via re-render (shows removable chip)', () => {
+    let current = draft();
+    const handlers: PopupActions = {
+      ...actions(),
+      onAddCustomTag: (value) => {
+        const list = (current.tags ?? '').split(',').map((item) => item.trim()).filter(Boolean);
+        const tag = value.trim();
+        if (tag && !list.includes(tag)) list.push(tag);
+        current = { ...current, tags: list.length ? list.join(',') : null };
+        renderPopup(root, { kind: 'ready', draft: current, errors: {}, revealed: new Set() }, handlers);
+      },
+    };
+    renderPopup(root, { kind: 'ready', draft: current, errors: {}, revealed: new Set() }, handlers);
+    const input = root.querySelector<HTMLInputElement>('#tag-custom-input') as HTMLInputElement;
+    input.value = 'FOO';
+    (root.querySelector('[data-action="add-tag"]') as HTMLButtonElement).click();
+    expect(root.querySelector('[data-tag-remove="FOO"]')).not.toBeNull();
   });
 
   it('opens the custom architecture menu and selects an option', () => {
