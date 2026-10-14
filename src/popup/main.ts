@@ -63,7 +63,11 @@ function currentReady(): Extract<PopupState, { kind: 'ready' }> | null {
 function updateDraft(transform: (draft: SiteDraft) => SiteDraft): void {
   const ready = currentReady();
   if (!ready) return;
+  const advanced = root.querySelector<HTMLDetailsElement>('details.advanced');
+  const keepAdvancedOpen = advanced?.open ?? false;
   paint(readyState(transform(ready.draft), ready.revealed, ready.sourceOrigin));
+  const nextAdvanced = root.querySelector<HTMLDetailsElement>('details.advanced');
+  if (nextAdvanced) nextAdvanced.open = keepAdvancedOpen;
 }
 
 async function loadSite(): Promise<void> {
@@ -81,6 +85,25 @@ async function loadSite(): Promise<void> {
   } catch (error) {
     paint({ kind: 'error', message: error instanceof Error ? error.message : '读取当前站点失败，请重试' });
   }
+}
+
+function splitTags(tags: string | null): string[] {
+  return (tags ?? '').split(',').map((tag) => tag.trim()).filter(Boolean);
+}
+
+function showToast(message: string): void {
+  let toast = document.getElementById('mc-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'mc-toast';
+    toast.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:2147483647;background:#111827;color:#fff;padding:8px 14px;border-radius:8px;font:13px/1.4 -apple-system,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.3)';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.display = 'block';
+  const node = toast as HTMLElement & { _timer?: number };
+  clearTimeout(node._timer);
+  node._timer = window.setTimeout(() => { node.style.display = 'none'; }, 1800);
 }
 
 const actions: PopupActions = {
@@ -133,6 +156,32 @@ const actions: PopupActions = {
         default: return draft;
       }
     });
+  },
+  onTagToggle: (tag) => {
+    updateDraft((draft) => {
+      const list = splitTags(draft.tags);
+      const index = list.indexOf(tag);
+      if (index >= 0) list.splice(index, 1); else list.push(tag);
+      return { ...draft, tags: list.length > 0 ? list.join(',') : null };
+    });
+  },
+  onTagRemove: (tag) => {
+    updateDraft((draft) => {
+      const list = splitTags(draft.tags).filter((item) => item !== tag);
+      return { ...draft, tags: list.length > 0 ? list.join(',') : null };
+    });
+  },
+  onAddCustomTag: (value) => {
+    const tag = value.trim();
+    console.log('[MovieClaw] onAddCustomTag:', JSON.stringify(tag));
+    updateDraft((draft) => {
+      const list = splitTags(draft.tags);
+      if (tag && !list.includes(tag)) list.push(tag);
+      const next = list.length > 0 ? list.join(',') : null;
+      console.log('[MovieClaw] tags now:', JSON.stringify(next));
+      return { ...draft, tags: next };
+    });
+    if (tag) showToast('已添加 ' + tag);
   },
   onToggleCredential: (field) => {
     const ready = currentReady();

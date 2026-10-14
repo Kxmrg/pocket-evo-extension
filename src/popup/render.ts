@@ -1,6 +1,7 @@
 import type { CollectionResult } from '../application/collect-site';
 import type { SiteDraft } from '../domain/adapt-site';
 import type { EncodedPayload } from '../domain/payload';
+import { SITE_TAGS } from '../domain/site-tags';
 import type { ArchitectureId, DetectionResult } from '../domain/types';
 
 export type PopupState =
@@ -19,6 +20,9 @@ export interface PopupActions {
   onRetry: () => void;
   onArchitectureChange: (architecture: ArchitectureId) => void;
   onFieldChange: (field: string, value: string | number | boolean | null) => void;
+  onTagToggle: (tag: string) => void;
+  onTagRemove: (tag: string) => void;
+  onAddCustomTag: (value: string) => void;
   onToggleCredential: (field: string) => void;
   onPageChange: (index: number, field: 'name' | 'path', value: string) => void;
   onPageRemove: (index: number) => void;
@@ -97,6 +101,28 @@ function regularField(id: string, label: string, value: unknown, field: string, 
     <label for="${id}">${escapeHtml(label)}</label>
     <input id="${id}" data-field="${field}" type="${options.type ?? 'text'}" value="${escapeHtml(value)}" placeholder="${escapeHtml(options.placeholder ?? '')}" autocomplete="off">
     ${options.error ? `<p class="field-error" role="alert">${escapeHtml(options.error)}</p>` : ''}
+  </div>`;
+}
+
+function tagPicker(tags: string | null): string {
+  const selected = new Set((tags ?? '').split(',').map((tag) => tag.trim()).filter(Boolean));
+  const builtIn = SITE_TAGS.map((tag) => {
+    const on = selected.has(tag);
+    return `<button type="button" class="tag-chip${on ? ' on' : ''}" data-tag-toggle="${tag}" aria-pressed="${on}">${tag}</button>`;
+  }).join('');
+  const custom = [...selected].filter((tag) => !(SITE_TAGS as readonly string[]).includes(tag));
+  const customChips = custom.map((tag) => (
+    `<span class="tag-chip custom on">${escapeHtml(tag)}<button type="button" class="tag-remove" data-tag-remove="${escapeHtml(tag)}" aria-label="移除 ${escapeHtml(tag)}">×</button></span>`
+  )).join('');
+  return `<div class="field tag-field">
+    <label>站点标签</label>
+    <div class="tag-chips">${builtIn}</div>
+    <label class="tag-custom-label" for="tag-custom-input">自定义标签</label>
+    <div class="tag-custom">
+      <input id="tag-custom-input" type="text" placeholder="回车添加" autocomplete="off">
+      <button type="button" class="tag-add" data-action="add-tag">添加</button>
+    </div>
+    ${custom.length > 0 ? `<div class="tag-chips">${customChips}</div>` : ''}
   </div>`;
 }
 
@@ -198,7 +224,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
       </section>
       <details class="panel advanced"><summary><span>高级设置</span>${icon('chevron')}</summary>
         <div class="advanced-body">
-          ${regularField('tags', '站点标签', draft.tags ?? '', 'tags', { placeholder: '多个标签用英文逗号分隔' })}
+          ${tagPicker(draft.tags)}
           ${regularField('download-tags', '下载器标签', draft.downloadTags ?? '', 'downloadTags', { placeholder: '多个标签用英文逗号分隔' })}
           ${regularField('widget', '权重', draft.widget, 'widget', { type: 'number', error: errors.widget })}
           <div class="check-field"><input id="search" data-field="search" type="checkbox" ${draft.search ? 'checked' : ''}><label for="search">参与聚合搜索</label></div>
@@ -314,6 +340,24 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   for (const button of root.querySelectorAll<HTMLButtonElement>('[data-page-remove]')) {
     button.addEventListener('click', () => actions.onPageRemove(Number(button.dataset.pageRemove)));
   }
+  for (const button of root.querySelectorAll<HTMLButtonElement>('[data-tag-toggle]')) {
+    button.addEventListener('click', () => actions.onTagToggle(button.dataset.tagToggle ?? ''));
+  }
+  for (const button of root.querySelectorAll<HTMLButtonElement>('[data-tag-remove]')) {
+    button.addEventListener('click', () => actions.onTagRemove(button.dataset.tagRemove ?? ''));
+  }
+  const tagCustomInput = root.querySelector<HTMLInputElement>('#tag-custom-input');
+  const tagAddButton = root.querySelector<HTMLButtonElement>('[data-action="add-tag"]');
+  const commitCustomTag = () => {
+    const value = tagCustomInput?.value.trim() ?? '';
+    console.log('[MovieClaw] add-tag clicked, value=', JSON.stringify(value));
+    if (value) actions.onAddCustomTag(value);
+    else console.log('[MovieClaw] add-tag ignored: empty input');
+  };
+  tagAddButton?.addEventListener('click', commitCustomTag);
+  tagCustomInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') { event.preventDefault(); commitCustomTag(); }
+  });
 }
 
 export function popupStateFromCollection(result: CollectionResult, sourceOrigin?: string): PopupState {

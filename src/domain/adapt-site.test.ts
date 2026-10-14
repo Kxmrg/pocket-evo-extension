@@ -137,6 +137,19 @@ describe('adaptSite', () => {
     expect(draft.pages).toEqual([{ name: '综合', path, tags: null, selected: true }]);
   });
 
+  it('auto-fills site tags from categories and download tags from the site name', () => {
+    const draft = adaptSite(input('nexusphp', 'https://pt.example/torrents.php', {
+      title: 'Example PT - 首页',
+      links: [
+        { text: '综合', href: 'https://pt.example/torrents.php' },
+        { text: '电影', href: 'https://pt.example/torrents.php?cat=401' },
+        { text: '电视剧', href: 'https://pt.example/torrents.php?cat=402' },
+      ],
+    }));
+    expect(draft.tags).toBe('MOVIE,TV');
+    expect(draft.downloadTags).toBe('Example PT');
+  });
+
   it('marks required special credentials when extraction fails', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
     expect(draft.fieldWarnings).toMatchObject({
