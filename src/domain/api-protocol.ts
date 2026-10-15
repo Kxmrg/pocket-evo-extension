@@ -8,9 +8,9 @@ export function apiProtocol(address: string): ArchitectureId | null {
       'api.m-team.cc':'mtorrent', 'api.m-team.io':'mtorrent',
       'kp.m-team.cc':'mtorrent', 'kp.m-team.io':'mtorrent',
       'zp.m-team.cc':'mtorrent', 'zp.m-team.io':'mtorrent',
-      'haidan.cc':'haidan', 'www.haidan.cc':'haidan', 'sunnypt.top':'sunnypt',
+      'haidan.cc':'haidan', 'www.haidan.cc':'haidan', 'sunnypt.top':'sunnypt', 'rousi.pro':'rousi', 'www.yemapt.org':'yema',
     };
     return domains[u.hostname] ?? null;
   } catch { return null; }
 }
-export const independentApis = new Set<ArchitectureId>(['api','tnode','mtorrent','haidan','sunnypt']);
+export const independentApis = new Set<ArchitectureId>(['api','tnode','mtorrent','haidan','sunnypt','rousi','yema']);

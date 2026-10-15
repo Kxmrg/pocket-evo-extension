@@ -40,9 +40,13 @@ const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>> 
   mtorrent: 2,
   haidan: 3,
   sunnypt: 4,
+  rousi: 5,
+  yema: 6,
 };
 
 function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
+  if (id === 'rousi') return 'Rousi';
+  if (id === 'yema') return 'YemaPT';
   if (id === 'private') return privateSiteForHost(snapshot.host)?.name ?? snapshot.host;
   const withoutGenerator = snapshot.title.replace(/\s*[-|｜:]?\s*Powered by\b.*$/i, '');
   if (id === 'unit3d') {
@@ -134,7 +138,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     pages: extractTorrentPages(detection.id, snapshot),
     passkey: detection.id === 'mtorrent'
       ? mTorrentUid || null
-      : detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'private'
+      : detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'private'
         ? null
         : passkey.value || null,
     userAgent: snapshot.userAgent || null,

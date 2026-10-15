@@ -31,6 +31,8 @@ const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
   mtorrent: 2,
   haidan: 3,
   sunnypt: 4,
+  rousi: 5,
+  yema: 6,
 };
 
 function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
@@ -126,11 +128,11 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.token,
+        token: architecture === 'nexusphp' || architecture === 'rousi' || architecture === 'yema' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.token,
         webToken: architecture === 'mtorrent' ? draft.webToken : null,
         webDeviceId: architecture === 'mtorrent' ? draft.webDeviceId : null,
         webVisitorId: architecture === 'mtorrent' ? draft.webVisitorId : null,
-        passkey: architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.passkey,
+        passkey: architecture === 'rousi' || architecture === 'yema' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
       };

@@ -7,6 +7,8 @@ export function fixture(id: ArchitectureId = 'nexusphp') {
  if (id==='mtorrent') Object.assign(d,{name:'M-Team',address:'https://api.m-team.cc',passkey:'42',token:'fixture-api',webToken:'fixture-auth',webDeviceId:'fixture-did',webVisitorId:'fixture-vid'});
  if(id==='tnode')d.address='https://zhuque.in';
  if(id==='haidan')d.address='https://www.haidan.cc';
+ if(id==='rousi')d.address='https://rousi.pro';
+ if(id==='yema')d.address='https://www.yemapt.org';
  if(id==='sunnypt')d.address='https://sunnypt.top';
  return d;
 }

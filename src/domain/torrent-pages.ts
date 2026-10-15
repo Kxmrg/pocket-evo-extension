@@ -1,3 +1,4 @@
+import { apiProtocol } from './api-protocol';
 import type { ArchitectureId, PageSnapshot } from './types';
 
 export interface DraftPage {
@@ -13,6 +14,8 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
   mtorrent: '/browse',
   haidan: '/torrents.php',
   sunnypt: '/torrents?category=All',
+  rousi: '/torrents',
+  yema: '/torrent/list',
   gazelle: '/torrents.php',
   unit3d: '/torrents',
   private: '/torrents',
@@ -23,7 +26,7 @@ export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string): Dra
     const current = new URL(snapshot.url);
     return {
       name,
-      path: `${current.pathname || '/'}${current.search}`,
+      path: apiProtocol(current.origin) === 'yema' && current.hash.startsWith('#/') ? current.hash.slice(1) : `${current.pathname || '/'}${current.search}`,
       tags: null,
       selected: true,
     };
@@ -45,6 +48,8 @@ export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot):
   const page = (path: string): DraftPage[] => [{name:'综合',path,tags:null,selected:true}];
   if (id === 'mtorrent') return page('/browse');
   if (id === 'tnode') return page('/torrent/search');
+  if (id === 'rousi') return page('/torrents');
+  if (id === 'yema') return page('/torrent/list');
   if (id === 'haidan') return page('/torrents.php');
   if (id === 'sunnypt') return page('/torrents?category=All');
   if (id !== 'nexusphp') return [];

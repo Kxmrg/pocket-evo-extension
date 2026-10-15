@@ -5,6 +5,8 @@ export type ArchitectureId =
   | 'mtorrent'
   | 'haidan'
   | 'sunnypt'
+  | 'rousi'
+  | 'yema'
   | 'gazelle'
   | 'unit3d'
   | 'private'
