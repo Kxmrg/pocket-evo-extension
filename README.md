@@ -10,7 +10,6 @@
 - 从同源导航识别默认资源入口（包括 TTG 的 `/browse.php`），允许添加分类入口。
 - 站点名、入口、标签、凭据按 Evo 限制校验，生成前提示字段错误。
 - MT 单独导入 API Key、UID、Auth、DID、VID；Tnode 不导入临时 CSRF。
-- 不含 Qt 的权重、聚合搜索、置顶和页面标签字段。
 - 二维码采用 `pocket-evo://import/site?v=1&data=…`，JSON 协议 `pocket-evo.site` v1，UTF-8 → raw DEFLATE → Base64URL。
 - 数据为 `site.family/name/address/entries/userAgent/tags/downloadTags/secrets`；凭据仅放 `secrets`。需配合支持 Evo 协议的新版应用。
 
