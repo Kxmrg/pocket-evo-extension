@@ -41,6 +41,7 @@ export function validEntry(architecture: ArchitectureId, path: string): boolean 
       return value.more == null || typeof value.more === 'boolean';
     } catch { return false; }
   }
+  if (architecture === 'cola') return u.pathname === '/browse' && [...u.searchParams.keys()].every(k => new Set(['view','direction','q','category','douban_id','imdb_id','year','genre','resolution','source','video_codec','hdr','audio','subtitle','episode','season_number','seeded','version_sort','sort','page','pageSize']).has(k) && u.searchParams.getAll(k).length===1 && (u.searchParams.get(k)?.length ?? 0)<=1024);
   if (architecture === 'rousi' || architecture === 'yema') {
     const allowed = new Set(architecture === 'rousi' ? ['q','category','promotion','sort'] : ['keyword','categoryId','uploadPromotionType','downloadPromotionType','sorterField','sorterOrder']);
     return u.pathname === (architecture === 'rousi' ? '/torrents' : '/torrent/list') && [...u.searchParams.keys()].every(k=>allowed.has(k) && u.searchParams.getAll(k).length===1 && (u.searchParams.get(k)?.length ?? 0)<=1024);

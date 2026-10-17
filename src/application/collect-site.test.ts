@@ -156,3 +156,9 @@ describe('collectSiteDraft', () => {
     expect(JSON.stringify(result)).not.toContain('private-secret');
   });
 });
+
+it('Cola collects the API-path session, not just the root marker',async()=>{
+ const snapshot={...nexusSnapshot(),url:'https://www.colapt.com/browse?view=torrents',origin:'https://www.colapt.com',host:'www.colapt.com',title:'Cola'};
+ const result=await collectSiteDraft(deps({getContext:async()=>({url:snapshot.url,origin:snapshot.origin,hasPermission:true}),readSnapshot:async()=>snapshot,readCookies:async(url)=>{expect(url).toBe('https://www.colapt.com/api/v1/me');return [{name:'reelcore_session',value:'fixture',domain:'www.colapt.com',path:'/api/v1',secure:true},{name:'reelcore_session_marker',value:'1',domain:'www.colapt.com',path:'/',secure:true},{name:'other',value:'private',domain:'other.invalid',path:'/',secure:true}];}}));
+ expect(result.state).toBe('ready');if(result.state!=='ready')throw Error('not ready');expect(result.draft.cookie).toBe('reelcore_session=fixture; reelcore_session_marker=1');
+});

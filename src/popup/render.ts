@@ -43,6 +43,7 @@ const architectureNames: Record<ArchitectureId, string> = {
   sunnypt: '独立架构站点',
   rousi: '独立架构站点',
   yema: '独立架构站点',
+  cola: '独立架构站点',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
   private: '独立架构站点',
@@ -193,10 +194,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const webVisitorIdField = draft.architecture === 'mtorrent'
     ? credentialField('webVisitorId', 'VID（可选）', draft.webVisitorId, 'webVisitorId', state)
     : '';
-  const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
+  const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
     : credentialField('passkey', draft.architecture === 'mtorrent' ? 'UID' : 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;

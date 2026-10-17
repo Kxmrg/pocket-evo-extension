@@ -8,6 +8,7 @@ export function fixture(id: ArchitectureId = 'nexusphp') {
  if(id==='tnode')d.address='https://zhuque.in';
  if(id==='haidan')d.address='https://www.haidan.cc';
  if(id==='rousi')d.address='https://rousi.pro';
+ if(id==='cola')d.address='https://www.colapt.com';
  if(id==='yema')d.address='https://www.yemapt.org';
  if(id==='sunnypt')d.address='https://sunnypt.top';
  return d;

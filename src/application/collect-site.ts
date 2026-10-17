@@ -48,15 +48,17 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
     if (!detection.supported && detection.id !== 'unknown') {
       return { state: 'unsupported', detection };
     }
+    // Cola scopes its real HttpOnly session to the API path; /browse only has a marker.
+    const cookieUrl = detection.id === 'cola' ? new URL('/api/v1/me', context.origin).href : context.url;
     let cookies: CookieLike[] = [];
     let cookieReadFailed = false;
     try {
-      cookies = await deps.readCookies(context.url, context.tabId);
+      cookies = await deps.readCookies(cookieUrl, context.tabId);
     } catch {
       cookieReadFailed = true;
     }
     const cookieHeader = mergeCookieHeaders(
-      formatCookieHeader(cookies, context.url),
+      formatCookieHeader(cookies, cookieUrl),
       snapshot.documentCookie ?? '',
     );
     const snapshotWithCookieCandidates: PageSnapshot = {

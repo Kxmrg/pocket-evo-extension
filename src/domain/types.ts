@@ -7,6 +7,7 @@ export type ArchitectureId =
   | 'sunnypt'
   | 'rousi'
   | 'yema'
+  | 'cola'
   | 'gazelle'
   | 'unit3d'
   | 'private'
