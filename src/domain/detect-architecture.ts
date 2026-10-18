@@ -130,13 +130,13 @@ function scoreNexusPhp(snapshot: PageSnapshot): ScoreResult {
 }
 
 function fixed(id: ArchitectureId, reason: string): DetectionResult {
-  return { id, supported: ['btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(id), confidence: 'certain', reasons: [reason] };
+  return { id, supported: ['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(id), confidence: 'certain', reasons: [reason] };
 }
 
 function detectionFromScore(result: ScoreResult): DetectionResult {
   return {
     id: result.id,
-    supported: result.supported && ['btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(result.id),
+    supported: result.supported && ['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(result.id),
     confidence: result.explicit ? 'certain' : 'likely',
     reasons: result.reasons,
   };
@@ -144,10 +144,11 @@ function detectionFromScore(result: ScoreResult): DetectionResult {
 
 export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   if (isHost(snapshot.host, 'hd-space.org') || isHost(snapshot.host, 'hd-torrents.org') || /powered by\s+(?:btitracker|xbtit)\b/i.test(searchable(snapshot))) return fixed('btitracker', 'BtiTracker / xbtit');
-  const privateSite = privateSiteForHost(snapshot.host);
-  if (privateSite && privateSite.id !== 'beyondhd') return fixed('private', `固定 Private 域名：${privateSite.root}`);
   const api = apiProtocol(snapshot.origin);
   if (api) return fixed(api, '独立架构站点：按域名识别');
+  const privateSite = privateSiteForHost(snapshot.host);
+  if (privateSite && privateSite.id !== 'beyondhd') return fixed('private', `固定 Private 域名：${privateSite.root}`);
+
   if (isHost(snapshot.host, 'dicmusic.com')) return fixed('gazelle', '固定域名：dicmusic.com');
   if (isHost(snapshot.host, 'greatposterwall.com')) return fixed('gazelle', '固定域名：greatposterwall.com');
   if (isHost(snapshot.host, 'passthepopcorn.me')) return fixed('gazelle', '固定域名：passthepopcorn.me');

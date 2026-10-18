@@ -22,7 +22,6 @@ function snapshot(url = 'https://example.com/', overrides: Partial<PageSnapshot>
 
 describe('detectArchitecture', () => {
   it.each([
-    ['https://exoticaz.to/torrents', 'exoticaz.to'],
     ['https://www.filelist.io/browse.php', 'filelist.io'],
     ['https://img.hdbits.org/browse.php', 'hdbits.org'],
   ] as const)('recognizes %s as the Private architecture by domain', (url, root) => {

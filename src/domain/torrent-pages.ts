@@ -1,3 +1,4 @@
+import {independentHtml,independentHtmlDefaults,normalizeYingEntry,normalizeKaragargaEntry} from './independent-html';
 import { apiProtocol } from './api-protocol';
 import type { ArchitectureId, PageSnapshot } from './types';
 
@@ -9,6 +10,7 @@ export interface DraftPage {
 }
 
 const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
+  ...independentHtmlDefaults,
   nexusphp: '/torrents.php',
   tnode: '/torrent/search',
   mtorrent: '/browse',
@@ -25,6 +27,8 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
 };
 
 export function normalizeEntryPath(id: ArchitectureId, path: string): string {
+  if (id === 'karagarga') return normalizeKaragargaEntry(path);
+  if (id === 'ying') return normalizeYingEntry(path);
   if (id !== 'unit3d') return path;
   const u = new URL(path, 'https://entry.invalid');
   u.searchParams.set('view', 'list');
@@ -36,7 +40,7 @@ export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string, arch
     const current = new URL(snapshot.url);
     return {
       name,
-      path: architecture === 'unit3d' ? normalizeEntryPath(architecture, `${current.pathname}${current.search}`) : apiProtocol(current.origin) === 'yema' && current.hash.startsWith('#/') ? current.hash.slice(1) : `${current.pathname || '/'}${current.search}`,
+      path: architecture === 'unit3d' || architecture === 'ying' || architecture === 'karagarga' ? normalizeEntryPath(architecture, `${current.pathname}${current.search}`) : apiProtocol(current.origin) === 'yema' && current.hash.startsWith('#/') ? current.hash.slice(1) : `${current.pathname || '/'}${current.search}`,
       tags: null,
       selected: true,
     };
@@ -56,6 +60,8 @@ export function createManualPage(id: ArchitectureId): DraftPage {
 
 export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
   const page = (path: string): DraftPage[] => [{name:'综合',path,tags:null,selected:true}];
+  if (id === 'ying') return [{name:'影视',path:'/p_torrent/video_list_t.php',tags:null,selected:true},{name:'音乐',path:'/p_music/music_list_t.php',tags:null,selected:true}];
+  if (independentHtml.has(id)) return page(independentHtmlDefaults[id]!);
   if (id === 'btitracker') return page(snapshot.host === 'hd-torrents.org' ? '/torrents.php' : '/index.php?page=torrents');
   if (id === 'beyondhd') return page('/torrents');
   if (id === 'unit3d') {

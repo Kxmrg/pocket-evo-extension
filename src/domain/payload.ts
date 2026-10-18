@@ -1,3 +1,4 @@
+import {independentHtml} from './independent-html';
 import { deflateSync } from 'fflate';
 import QRCode from 'qrcode';
 import { normalizeEntryPath } from './torrent-pages';
@@ -21,7 +22,7 @@ export function buildImportPayload(draft: SiteDraft) {
       ...(draft.webToken ? {webToken:draft.webToken} : {}),
       ...(draft.webDeviceId ? {webDeviceId:draft.webDeviceId} : {}),
       ...(draft.webVisitorId ? {webVisitorId:draft.webVisitorId} : {}),
-    } : {cookie:draft.cookie,...(!['unit3d','btitracker','beyondhd'].includes(draft.architecture) && draft.passkey ? {passkey:draft.passkey} : {})},
+    } : {cookie:draft.cookie,...(!independentHtml.has(draft.architecture) && !['unit3d','btitracker','beyondhd'].includes(draft.architecture) && draft.passkey ? {passkey:draft.passkey} : {})},
   }};
 }
 

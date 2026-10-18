@@ -1,3 +1,4 @@
+import {independentHtml} from '../domain/independent-html';
 import { apiProtocol, independentApis } from '../domain/api-protocol';
 import QRCode from 'qrcode';
 import { entryError } from '../domain/evo-entry';
@@ -129,11 +130,11 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.token,
+        token: architecture === 'nexusphp' || independentHtml.has(architecture) || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.token,
         webToken: architecture === 'mtorrent' ? draft.webToken : null,
         webDeviceId: architecture === 'mtorrent' ? draft.webDeviceId : null,
         webVisitorId: architecture === 'mtorrent' ? draft.webVisitorId : null,
-        passkey: architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.passkey,
+        passkey: independentHtml.has(architecture) || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
       };

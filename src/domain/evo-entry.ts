@@ -1,3 +1,4 @@
+import {independentHtml,validIndependentHtmlEntry,normalizeKaragargaEntry} from './independent-html';
 import type { ArchitectureId } from './types';
 
 const mtModes = new Set(['normal', 'adult', 'movie', 'music', 'tvshow', 'anime', 'waterfall', 'rss', 'rankings', 'all']);
@@ -17,8 +18,10 @@ export function safeEntryPath(path: string): boolean {
   } catch { return false; }
 }
 export function validEntry(architecture: ArchitectureId, path: string): boolean {
+  if (architecture==='karagarga') path=normalizeKaragargaEntry(path);
   if (!safeEntryPath(path)) return false;
   const u = new URL(path, 'https://entry.invalid');
+  if (independentHtml.has(architecture)) return validIndependentHtmlEntry(architecture,path);
   if (architecture === 'unit3d') return /^\/torrents\/?$/.test(u.pathname);
   if (architecture === 'beyondhd') return /^\/torrents\/?$/.test(u.pathname) || /^\/categories\/[^/]+\.[1-9][0-9]*$/.test(u.pathname);
   if (architecture === 'mtorrent') {
@@ -55,6 +58,7 @@ export function validEntry(architecture: ArchitectureId, path: string): boolean 
 
 /** Describe unsupported entries without ever echoing query values or credentials. */
 export function entryError(architecture: ArchitectureId, path: string): string | null {
+  if (architecture==='karagarga') path=normalizeKaragargaEntry(path);
   if (!safeEntryPath(path)) return '地址不安全或格式错误，请使用不含凭据的站内相对地址';
   if (validEntry(architecture, path)) return null;
   if (architecture === 'mtorrent') {

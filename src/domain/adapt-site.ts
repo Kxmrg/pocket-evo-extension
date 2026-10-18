@@ -1,3 +1,4 @@
+import {independentHtml,independentHtmlNames} from './independent-html';
 import { selectCandidate, type FieldCandidate } from './candidates';
 import { extractTorrentPages, type DraftPage } from './torrent-pages';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
@@ -46,6 +47,7 @@ const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>> 
 };
 
 function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
+  if (independentHtml.has(id)) return independentHtmlNames[id]!;
   if (id === 'beyondhd') return 'BeyondHD';
   if (id === 'rousi') return 'Rousi';
   if (id === 'yema') return 'YemaPT';
@@ -141,7 +143,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     pages: extractTorrentPages(detection.id, snapshot),
     passkey: detection.id === 'mtorrent'
       ? mTorrentUid || null
-      : detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'cola' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'btitracker' || detection.id === 'private' || detection.id === 'beyondhd'
+      : independentHtml.has(detection.id) || detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'cola' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'btitracker' || detection.id === 'private' || detection.id === 'beyondhd'
         ? null
         : passkey.value || null,
     userAgent: snapshot.userAgent || null,
