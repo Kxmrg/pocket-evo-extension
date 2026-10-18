@@ -24,7 +24,6 @@ describe('detectArchitecture', () => {
   it.each([
     ['https://exoticaz.to/torrents', 'exoticaz.to'],
     ['https://www.filelist.io/browse.php', 'filelist.io'],
-    ['https://beyond-hd.me/torrents', 'beyond-hd.me'],
     ['https://img.hdbits.org/browse.php', 'hdbits.org'],
   ] as const)('recognizes %s as the Private architecture by domain', (url, root) => {
     const result = detectArchitecture(snapshot(url, {
@@ -64,7 +63,7 @@ describe('detectArchitecture', () => {
         { text: 'Legacy', href: 'https://u3.example/torrents.php' },
       ],
     }));
-    expect(result).toMatchObject({ id: 'unit3d', supported: false });
+    expect(result).toMatchObject({ id: 'unit3d', supported: true });
   });
 
   it('recognizes exact UNIT3D product identity without a fixed domain', () => {
@@ -73,7 +72,7 @@ describe('detectArchitecture', () => {
       links: [{ text: 'Torrents', href: 'https://tracker.example/torrents' }],
     }));
 
-    expect(result).toMatchObject({ id: 'unit3d', supported: false, confidence: 'certain' });
+    expect(result).toMatchObject({ id: 'unit3d', supported: true, confidence: 'certain' });
   });
 
   it('recognizes a structurally complete UNIT3D tracker without branding', () => {
@@ -87,7 +86,7 @@ describe('detectArchitecture', () => {
       ],
     }));
 
-    expect(result).toMatchObject({ id: 'unit3d', supported: false, confidence: 'likely' });
+    expect(result).toMatchObject({ id: 'unit3d', supported: true, confidence: 'likely' });
   });
 
   it.each([

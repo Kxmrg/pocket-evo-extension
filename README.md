@@ -5,7 +5,8 @@
 ## 功能
 
 - 架构分类为 NP、GZ、U3D、独立架构站点；GZ / U3D 当前标记为待支持。
-- 支持 NexusPHP；独立分类按精确域名识别朱雀、MT、海胆、SunnyPT、Rousi、Yema，未知域名明确提示。
+- 支持 NexusPHP、UNIT3D；独立分类按精确域名识别朱雀、MT、海胆、SunnyPT、Rousi、Yema、Cola、BeyondHD，未知域名明确提示。
+- UNIT3D 入口统一使用清单模式 `view=list`，保留分类等筛选参数；BeyondHD 使用独立架构和原生 `/torrents`、分类入口。两者导入 Cookie 与 UA，不需要 API Token。
 - Yema 的 Hash 分类地址转换为 Evo 逻辑入口，保留分类筛选参数。
 - 从同源导航识别默认资源入口（包括 TTG 的 `/browse.php`），允许添加分类入口。
 - 站点名、入口、标签、凭据按 Evo 限制校验，生成前提示字段错误。

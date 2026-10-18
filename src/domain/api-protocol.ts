@@ -4,6 +4,7 @@ export function apiProtocol(address: string): ArchitectureId | null {
     const u = new URL(address);
     if (u.protocol !== 'https:' || u.port || u.username || u.password) return null;
     const domains: Record<string, ArchitectureId> = {
+      'beyond-hd.me':'beyondhd',
       'zhuque.in':'tnode', 'www.zhuque.in':'tnode',
       'api.m-team.cc':'mtorrent', 'api.m-team.io':'mtorrent',
       'kp.m-team.cc':'mtorrent', 'kp.m-team.io':'mtorrent',
@@ -13,4 +14,4 @@ export function apiProtocol(address: string): ArchitectureId | null {
     return domains[u.hostname] ?? null;
   } catch { return null; }
 }
-export const independentApis = new Set<ArchitectureId>(['api','tnode','mtorrent','haidan','sunnypt','rousi','yema','cola']);
+export const independentApis = new Set<ArchitectureId>(['api','beyondhd','tnode','mtorrent','haidan','sunnypt','rousi','yema','cola']);

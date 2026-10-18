@@ -20,14 +20,22 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
   gazelle: '/torrents.php',
   unit3d: '/torrents',
   private: '/torrents',
+  beyondhd: '/torrents',
 };
 
-export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string): DraftPage | null {
+export function normalizeEntryPath(id: ArchitectureId, path: string): string {
+  if (id !== 'unit3d') return path;
+  const u = new URL(path, 'https://entry.invalid');
+  u.searchParams.set('view', 'list');
+  return `${u.pathname}${u.search}${u.hash}`;
+}
+
+export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string, architecture?: ArchitectureId): DraftPage | null {
   try {
     const current = new URL(snapshot.url);
     return {
       name,
-      path: apiProtocol(current.origin) === 'yema' && current.hash.startsWith('#/') ? current.hash.slice(1) : `${current.pathname || '/'}${current.search}`,
+      path: architecture === 'unit3d' ? normalizeEntryPath(architecture, `${current.pathname}${current.search}`) : apiProtocol(current.origin) === 'yema' && current.hash.startsWith('#/') ? current.hash.slice(1) : `${current.pathname || '/'}${current.search}`,
       tags: null,
       selected: true,
     };
@@ -47,6 +55,11 @@ export function createManualPage(id: ArchitectureId): DraftPage {
 
 export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
   const page = (path: string): DraftPage[] => [{name:'综合',path,tags:null,selected:true}];
+  if (id === 'beyondhd') return page('/torrents');
+  if (id === 'unit3d') {
+    const u = new URL(snapshot.url);
+    return page(/^\/torrents\/?$/.test(u.pathname) ? normalizeEntryPath(id, `${u.pathname}${u.search}`) : '/torrents?view=list');
+  }
   if (id === 'mtorrent') return page('/browse');
   if (id === 'tnode') return page('/torrent/search');
   if (id === 'rousi') return page('/torrents');

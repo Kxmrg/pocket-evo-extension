@@ -19,6 +19,8 @@ export function safeEntryPath(path: string): boolean {
 export function validEntry(architecture: ArchitectureId, path: string): boolean {
   if (!safeEntryPath(path)) return false;
   const u = new URL(path, 'https://entry.invalid');
+  if (architecture === 'unit3d') return /^\/torrents\/?$/.test(u.pathname);
+  if (architecture === 'beyondhd') return /^\/torrents\/?$/.test(u.pathname) || /^\/categories\/[^/]+\.[1-9][0-9]*$/.test(u.pathname);
   if (architecture === 'mtorrent') {
     const parts = u.pathname.split('/').filter(Boolean);
     if (parts[0] !== 'browse' || parts.length > 2 || !mtModes.has(parts[1] ?? 'normal')) return false;

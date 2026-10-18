@@ -46,6 +46,7 @@ const architectureNames: Record<ArchitectureId, string> = {
   cola: '独立架构站点',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
+  beyondhd: 'BeyondHD',
   private: '独立架构站点',
   unknown: '未知架构',
 };
@@ -151,12 +152,12 @@ function credentialField(
 }
 
 function architectureSelect(draft: SiteDraft, errors: Record<string, string>): string {
-  const category = independentApis.has(draft.architecture) || draft.architecture === 'private' ? 'api' : draft.architecture;
+  const category = independentApis.has(draft.architecture) || draft.architecture === 'private' || draft.architecture === 'beyondhd' ? 'api' : draft.architecture;
   const supported: ArchitectureId[] = ['nexusphp', 'gazelle', 'unit3d', 'api'];
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
-  ].map((id) => `<button type="button" class="architecture-option ${category === id ? 'is-selected' : ''}" data-architecture-option="${id}" ${id === 'gazelle' || id === 'unit3d' ? 'disabled title="暂未支持"' : ''} role="option" aria-selected="${category === id}"><span>${category === id ? '✓' : ''}</span>${escapeHtml(architectureNames[id])}</button>`).join('');
+  ].map((id) => `<button type="button" class="architecture-option ${category === id ? 'is-selected' : ''}" data-architecture-option="${id}" ${id === 'gazelle' ? 'disabled title="暂未支持"' : ''} role="option" aria-selected="${category === id}"><span>${category === id ? '✓' : ''}</span>${escapeHtml(architectureNames[id])}</button>`).join('');
   return `<div class="field ${errors.architecture ? 'has-error' : ''}">
     <label id="architecture-label">站点架构</label>
     <div class="architecture-control">
@@ -194,10 +195,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const webVisitorIdField = draft.architecture === 'mtorrent'
     ? credentialField('webVisitorId', 'VID（可选）', draft.webVisitorId, 'webVisitorId', state)
     : '';
-  const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
+  const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
     ? ''
     : credentialField('passkey', draft.architecture === 'mtorrent' ? 'UID' : 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;

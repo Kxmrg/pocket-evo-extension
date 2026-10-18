@@ -129,11 +129,11 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.token,
+        token: architecture === 'nexusphp' || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.token,
         webToken: architecture === 'mtorrent' ? draft.webToken : null,
         webDeviceId: architecture === 'mtorrent' ? draft.webDeviceId : null,
         webVisitorId: architecture === 'mtorrent' ? draft.webVisitorId : null,
-        passkey: architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.passkey,
+        passkey: architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
       };
@@ -205,7 +205,7 @@ const actions: PopupActions = {
         const context = await getActivePageContext();
         const current = currentReady();
         if (!current || current.sourceOrigin !== context.origin) throw new Error('请在当前站点内添加资源入口');
-        const page = draftPageFromSnapshot(await readPageSnapshot(context.tabId), '');
+        const page = draftPageFromSnapshot(await readPageSnapshot(context.tabId), '', current.draft.architecture);
         const reason = page ? entryError(current.draft.architecture,page.path) : null;
         if (reason) throw new Error(reason);
         if (!page) throw new Error('未能读取当前页面地址');

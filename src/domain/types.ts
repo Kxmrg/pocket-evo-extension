@@ -10,6 +10,7 @@ export type ArchitectureId =
   | 'cola'
   | 'gazelle'
   | 'unit3d'
+  | 'beyondhd'
   | 'private'
   | 'unknown';
 
