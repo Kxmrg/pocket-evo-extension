@@ -130,19 +130,20 @@ function scoreNexusPhp(snapshot: PageSnapshot): ScoreResult {
 }
 
 function fixed(id: ArchitectureId, reason: string): DetectionResult {
-  return { id, supported: ['unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(id), confidence: 'certain', reasons: [reason] };
+  return { id, supported: ['btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(id), confidence: 'certain', reasons: [reason] };
 }
 
 function detectionFromScore(result: ScoreResult): DetectionResult {
   return {
     id: result.id,
-    supported: result.supported && ['unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(result.id),
+    supported: result.supported && ['btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(result.id),
     confidence: result.explicit ? 'certain' : 'likely',
     reasons: result.reasons,
   };
 }
 
 export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
+  if (isHost(snapshot.host, 'hd-space.org') || isHost(snapshot.host, 'hd-torrents.org') || /powered by\s+(?:btitracker|xbtit)\b/i.test(searchable(snapshot))) return fixed('btitracker', 'BtiTracker / xbtit');
   const privateSite = privateSiteForHost(snapshot.host);
   if (privateSite && privateSite.id !== 'beyondhd') return fixed('private', `固定 Private 域名：${privateSite.root}`);
   const api = apiProtocol(snapshot.origin);

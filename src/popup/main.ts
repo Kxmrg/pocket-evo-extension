@@ -129,11 +129,11 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.token,
+        token: architecture === 'nexusphp' || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.token,
         webToken: architecture === 'mtorrent' ? draft.webToken : null,
         webDeviceId: architecture === 'mtorrent' ? draft.webDeviceId : null,
         webVisitorId: architecture === 'mtorrent' ? draft.webVisitorId : null,
-        passkey: architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.passkey,
+        passkey: architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
       };

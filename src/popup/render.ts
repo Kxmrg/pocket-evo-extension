@@ -46,6 +46,7 @@ const architectureNames: Record<ArchitectureId, string> = {
   cola: '独立架构站点',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
+  btitracker: 'BtiTracker',
   beyondhd: 'BeyondHD',
   private: '独立架构站点',
   unknown: '未知架构',
@@ -153,7 +154,7 @@ function credentialField(
 
 function architectureSelect(draft: SiteDraft, errors: Record<string, string>): string {
   const category = independentApis.has(draft.architecture) || draft.architecture === 'private' || draft.architecture === 'beyondhd' ? 'api' : draft.architecture;
-  const supported: ArchitectureId[] = ['nexusphp', 'gazelle', 'unit3d', 'api'];
+  const supported: ArchitectureId[] = ['nexusphp', 'gazelle', 'unit3d', 'btitracker', 'api'];
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
@@ -195,10 +196,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const webVisitorIdField = draft.architecture === 'mtorrent'
     ? credentialField('webVisitorId', 'VID（可选）', draft.webVisitorId, 'webVisitorId', state)
     : '';
-  const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
+  const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'btitracker' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'btitracker' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
     ? ''
     : credentialField('passkey', draft.architecture === 'mtorrent' ? 'UID' : 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;

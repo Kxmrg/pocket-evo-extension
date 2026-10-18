@@ -12,7 +12,7 @@ export function buildImportPayload(draft: SiteDraft) {
   if (!validation.valid) throw new Error(Object.values(validation.errors)[0]);
   const mt = draft.architecture === 'mtorrent';
   return { protocol: 'pocket-evo.site', version: 1, site: {
-    family: draft.architecture === 'nexusphp' ? 'nexusphp' : draft.architecture === 'unit3d' ? 'unit3d' : 'api', name: draft.name.trim(), address: draft.address.trim(),
+    family: draft.architecture === 'nexusphp' ? 'nexusphp' : draft.architecture === 'unit3d' ? 'unit3d' : draft.architecture === 'btitracker' ? 'btitracker' : 'api', name: draft.name.trim(), address: draft.address.trim(),
     entries: draft.pages.filter(p=>p.selected).map(p=>({name:p.name.trim(),path:normalizeEntryPath(draft.architecture,p.path)})),
     ...(draft.importUserAgent && draft.userAgent ? {userAgent:draft.userAgent} : {}),
     ...(draft.tags ? {tags:splitTags(draft.tags)} : {}),
@@ -21,7 +21,7 @@ export function buildImportPayload(draft: SiteDraft) {
       ...(draft.webToken ? {webToken:draft.webToken} : {}),
       ...(draft.webDeviceId ? {webDeviceId:draft.webDeviceId} : {}),
       ...(draft.webVisitorId ? {webVisitorId:draft.webVisitorId} : {}),
-    } : {cookie:draft.cookie,...(!['unit3d','beyondhd'].includes(draft.architecture) && draft.passkey ? {passkey:draft.passkey} : {})},
+    } : {cookie:draft.cookie,...(!['unit3d','btitracker','beyondhd'].includes(draft.architecture) && draft.passkey ? {passkey:draft.passkey} : {})},
   }};
 }
 

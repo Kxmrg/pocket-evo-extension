@@ -19,6 +19,7 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
   cola: '/browse?direction=desc&view=torrents',
   gazelle: '/torrents.php',
   unit3d: '/torrents',
+  btitracker: '/index.php?page=torrents',
   private: '/torrents',
   beyondhd: '/torrents',
 };
@@ -55,6 +56,7 @@ export function createManualPage(id: ArchitectureId): DraftPage {
 
 export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
   const page = (path: string): DraftPage[] => [{name:'综合',path,tags:null,selected:true}];
+  if (id === 'btitracker') return page(snapshot.host === 'hd-torrents.org' ? '/torrents.php' : '/index.php?page=torrents');
   if (id === 'beyondhd') return page('/torrents');
   if (id === 'unit3d') {
     const u = new URL(snapshot.url);

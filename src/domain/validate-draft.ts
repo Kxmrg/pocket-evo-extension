@@ -5,8 +5,8 @@ export interface DraftValidation { valid: boolean; errors: Record<string, string
 export function validateDraft(draft: SiteDraft): DraftValidation {
   const errors: Record<string,string> = {};
   const expected: Record<string,number> = {nexusphp:0,tnode:1,mtorrent:2,haidan:3,sunnypt:4,rousi:5,yema:6,cola:7};
-  if (!['unit3d','beyondhd'].includes(draft.architecture) && (draft.scheme === null || expected[draft.architecture] !== draft.scheme)) errors.architecture = '请选择 Evo 支持的架构';
-  if (draft.architecture !== 'nexusphp' && draft.architecture !== 'unit3d' && apiProtocol(draft.address) !== draft.architecture) errors.address = '暂不支持此独立架构站点';
+  if (!['unit3d','btitracker','beyondhd'].includes(draft.architecture) && (draft.scheme === null || expected[draft.architecture] !== draft.scheme)) errors.architecture = '请选择 Evo 支持的架构';
+  if (draft.architecture !== 'nexusphp' && draft.architecture !== 'unit3d' && draft.architecture !== 'btitracker' && apiProtocol(draft.address) !== draft.architecture) errors.address = '暂不支持此独立架构站点';
   if (!draft.name.trim()) errors.name = '请输入站点名称';
   else if (Array.from(draft.name.trim()).length > 20) errors.name = '站点名称最多20个字符';
   try {

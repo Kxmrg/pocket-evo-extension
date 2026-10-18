@@ -141,7 +141,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     pages: extractTorrentPages(detection.id, snapshot),
     passkey: detection.id === 'mtorrent'
       ? mTorrentUid || null
-      : detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'cola' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'private' || detection.id === 'beyondhd'
+      : detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'cola' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'btitracker' || detection.id === 'private' || detection.id === 'beyondhd'
         ? null
         : passkey.value || null,
     userAgent: snapshot.userAgent || null,
