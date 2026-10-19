@@ -22,6 +22,7 @@ export function validEntry(architecture: ArchitectureId, path: string): boolean 
   if (!safeEntryPath(path)) return false;
   const u = new URL(path, 'https://entry.invalid');
   if (independentHtml.has(architecture)) return validIndependentHtmlEntry(architecture,path);
+  if (architecture === 'gazelle') return u.pathname === '/torrents.php' && !u.searchParams.has('id') && !u.searchParams.has('torrentid') && !u.searchParams.has('torrentId') && ['', 'basic', 'advanced'].includes(u.searchParams.get('action') ?? '');
   if (architecture === 'unit3d') return /^\/torrents\/?$/.test(u.pathname);
   if (architecture === 'beyondhd') return /^\/torrents\/?$/.test(u.pathname) || /^\/categories\/[^/]+\.[1-9][0-9]*$/.test(u.pathname);
   if (architecture === 'mtorrent') {

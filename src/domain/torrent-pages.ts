@@ -1,4 +1,5 @@
 import {independentHtml,independentHtmlDefaults,normalizeYingEntry,normalizeKaragargaEntry} from './independent-html';
+import {validEntry} from './evo-entry';
 import { apiProtocol } from './api-protocol';
 import type { ArchitectureId, PageSnapshot } from './types';
 
@@ -62,6 +63,11 @@ export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot):
   const page = (path: string): DraftPage[] => [{name:'综合',path,tags:null,selected:true}];
   if (id === 'ying') return [{name:'影视',path:'/p_torrent/video_list_t.php',tags:null,selected:true},{name:'音乐',path:'/p_music/music_list_t.php',tags:null,selected:true}];
   if (independentHtml.has(id)) return page(independentHtmlDefaults[id]!);
+  if (id === 'gazelle') {
+    const u = new URL(snapshot.url);
+    const path = `${u.pathname}${u.search}`;
+    return page(validEntry(id, path) ? path : '/torrents.php');
+  }
   if (id === 'btitracker') return page(snapshot.host === 'hd-torrents.org' ? '/torrents.php' : '/index.php?page=torrents');
   if (id === 'beyondhd') return page('/torrents');
   if (id === 'unit3d') {

@@ -130,13 +130,13 @@ function scoreNexusPhp(snapshot: PageSnapshot): ScoreResult {
 }
 
 function fixed(id: ArchitectureId, reason: string): DetectionResult {
-  return { id, supported: ['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(id), confidence: 'certain', reasons: [reason] };
+  return { id, supported: ['gazelle','exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(id), confidence: 'certain', reasons: [reason] };
 }
 
 function detectionFromScore(result: ScoreResult): DetectionResult {
   return {
     id: result.id,
-    supported: result.supported && ['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(result.id),
+    supported: result.supported && ['gazelle','exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','btitracker', 'unit3d', 'beyondhd', 'nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'rousi', 'yema', 'cola'].includes(result.id),
     confidence: result.explicit ? 'certain' : 'likely',
     reasons: result.reasons,
   };
@@ -149,10 +149,7 @@ export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   const privateSite = privateSiteForHost(snapshot.host);
   if (privateSite && privateSite.id !== 'beyondhd') return fixed('private', `固定 Private 域名：${privateSite.root}`);
 
-  if (isHost(snapshot.host, 'dicmusic.com')) return fixed('gazelle', '固定域名：dicmusic.com');
-  if (isHost(snapshot.host, 'greatposterwall.com')) return fixed('gazelle', '固定域名：greatposterwall.com');
-  if (isHost(snapshot.host, 'passthepopcorn.me')) return fixed('gazelle', '固定域名：passthepopcorn.me');
-  if (isHost(snapshot.host, 'broadcasthe.net')) return fixed('gazelle', '固定域名：broadcasthe.net');
+  if (['alpharatio.cc','anthelion.me','broadcasthe.net','brokenstones.is','dicmusic.com','gazellegames.net','hdf.world','passthepopcorn.me','redacted.sh','emparadise.rs','greatposterwall.com'].some(host => isHost(snapshot.host, host))) return fixed('gazelle', 'Gazelle / HTML');
 
   if (isHost(snapshot.host, 'eiga.moi') || isHost(snapshot.host, 'blutopia.cc')) return fixed('unit3d', '固定 UNIT3D 域名');
 

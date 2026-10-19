@@ -20,7 +20,7 @@ describe('Evo QR',()=>{
   for(const id of ['nexusphp','tnode'] as const){const d=fixture(id);d.token='stale'; expect(JSON.stringify(buildImportPayload(d))).not.toContain('stale');}
  });
  it('rejects unsupported architectures and oversized payloads before showing a QR',()=>{
-  const d=fixture();d.architecture='gazelle';d.scheme=5;expect(()=>encodeImportPayload(d)).toThrow();
+  const d=fixture();d.architecture='unknown';d.scheme=null;expect(()=>encodeImportPayload(d)).toThrow();
   const large=fixture();large.cookie=Array.from({length:16000},(_,i)=>String.fromCharCode(33+(i*i%90))).join('');
   large.cookie=Array.from({length:16000},()=>Math.random().toString(36).slice(2,3)).join('');
   expect(()=>encodeImportPayload(large)).toThrow(/二维码/);

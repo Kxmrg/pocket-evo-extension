@@ -11,4 +11,4 @@ it('does not treat current category, homepage, detail or external links as the d
 });
 it('always starts MT at browse, including when reading API settings',()=>{for(const path of ['/index','/usercp','/browse/adult'])expect(extractTorrentPages('mtorrent',snapshot('https://kp.m-team.cc'+path))[0]?.path).toBe('/browse');});
 it('preserves explicitly added category query',()=>{expect(draftPageFromSnapshot(snapshot('https://kp.m-team.cc/browse?team=44&team=9'),'官组')?.path).toBe('/browse?team=44&team=9');expect(createManualPage('mtorrent').path).toBe('/browse');});
-it('uses Tnode search and offers no unsupported architecture defaults',()=>{expect(extractTorrentPages('tnode',snapshot('https://zhuque.in/'))[0]?.path).toBe('/torrent/search');expect(extractTorrentPages('gazelle',snapshot('https://example.com/'))).toEqual([]);});
+it('uses Tnode search and offers no unsupported architecture defaults',()=>{expect(extractTorrentPages('tnode',snapshot('https://zhuque.in/'))[0]?.path).toBe('/torrent/search');expect(extractTorrentPages('unknown',snapshot('https://example.com/'))).toEqual([]);});

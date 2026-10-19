@@ -50,7 +50,7 @@ describe('detectArchitecture', () => {
     ['https://passthepopcorn.me/torrents.php', 'gazelle'],
     ['https://broadcasthe.net/collages.php', 'gazelle'],
   ] as const)('recognizes fixed site %s as %s', (url, expected) => {
-    expect(detectArchitecture(snapshot(url))).toMatchObject({ id: expected, supported: ['nexusphp','tnode','mtorrent','haidan','sunnypt'].includes(expected) });
+    expect(detectArchitecture(snapshot(url))).toMatchObject({ id: expected, supported: ['gazelle','nexusphp','tnode','mtorrent','haidan','sunnypt'].includes(expected) });
   });
 
   it('recognizes UNIT3D before a coincidental NexusPHP route', () => {
@@ -105,7 +105,7 @@ describe('detectArchitecture', () => {
         { text: 'Requests', href: 'https://gazelle.example/requests.php' },
       ],
     }));
-    expect(result).toMatchObject({ id: 'gazelle', supported: false, confidence: 'likely' });
+    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
   });
 
   it('supports GazellePW poster-wall pages as Gazelle', () => {
@@ -113,7 +113,7 @@ describe('detectArchitecture', () => {
       domMarkers: ['body#torrents', 'gazellepw-cover-wall', 'gazellepw-movie-filters'],
     }));
 
-    expect(result).toMatchObject({ id: 'gazelle', supported: false });
+    expect(result).toMatchObject({ id: 'gazelle', supported: true });
   });
 
   it.each([
@@ -121,7 +121,7 @@ describe('detectArchitecture', () => {
     [['btn-series-links', 'btn-torrent-actions']],
   ])('recognizes an HTML-only Gazelle structure: %j', (domMarkers) => {
     const result = detectArchitecture(snapshot('https://fork.example/torrents.php', { domMarkers }));
-    expect(result).toMatchObject({ id: 'gazelle', supported: false, confidence: 'likely' });
+    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
   });
 
   it('does not identify a page as GazellePW from movie filters alone', () => {
@@ -142,7 +142,7 @@ describe('detectArchitecture', () => {
       ],
     }));
 
-    expect(result).toMatchObject({ id: 'gazelle', supported: false, confidence: 'certain' });
+    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'certain' });
   });
 
   it.each([

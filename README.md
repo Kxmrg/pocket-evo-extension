@@ -4,8 +4,9 @@
 
 ## 功能
 
-- 架构分类为 NP、GZ、U3D、BTI、Other；GZ 当前待支持。
-- 支持 NexusPHP、UNIT3D、BtiTracker；独立分类按精确域名识别朱雀、MT、海胆、SunnyPT、Rousi、Yema、Cola、BeyondHD、ExoticaZ、FileList、Cinemageddon、HDBits、KG、TorrentLeech、Ying，未知域名明确提示。
+- 架构分类为 NP、GZ、U3D、BTI、Other。
+- 支持 NexusPHP、Gazelle、UNIT3D、BtiTracker；独立分类按精确域名识别朱雀、MT、海胆、SunnyPT、Rousi、Yema、Cola、BeyondHD、ExoticaZ、FileList、Cinemageddon、HDBits、KG、TorrentLeech、Ying，未知域名明确提示。
+- Gazelle 支持 AlphaRatio、Anthelion、BroadcasTheNet、BrokenStones、DICMusic、GazelleGames、HD-F、PassThePopcorn、Redacted、Empornium、Great Poster Wall。导入 Cookie 与 UA；只接受资源列表入口，保留原站平铺/分组参数，不导入详情、下载或管理动作。
 - UNIT3D 入口统一使用清单模式 `view=list`，保留分类等筛选参数；BeyondHD 使用独立架构和原生 `/torrents`、分类入口。两者导入 Cookie 与 UA，不需要 API Token。
 - Ying 影视与音乐入口自动转换为 `_t.php` 种子清单模式，保留筛选参数；使用 Cookie 与 UA，无需 API Token。
 - Yema 的 Hash 分类地址转换为 Evo 逻辑入口，保留分类筛选参数。
