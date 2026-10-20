@@ -86,7 +86,7 @@ function extensionVersion(): string {
   if (typeof chrome !== 'undefined' && chrome.runtime?.getManifest) {
     return chrome.runtime.getManifest().version;
   }
-  return '1.0.1';
+  return '1.2.0';
 }
 
 function appHeader(options: { title?: string; detail?: string; action?: string } = {}): string {
@@ -160,7 +160,7 @@ function architectureSelect(draft: SiteDraft, errors: Record<string, string>): s
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
-  ].map((id) => `<button type="button" class="architecture-option ${category === id ? 'is-selected' : ''}" data-architecture-option="${id}" ${id === 'gazelle' ? 'disabled title="暂未支持"' : ''} role="option" aria-selected="${category === id}"><span>${category === id ? '✓' : ''}</span>${escapeHtml(architectureNames[id])}</button>`).join('');
+  ].map((id) => `<button type="button" class="architecture-option ${category === id ? 'is-selected' : ''}" data-architecture-option="${id}" role="option" aria-selected="${category === id}"><span>${category === id ? '✓' : ''}</span>${escapeHtml(architectureNames[id])}</button>`).join('');
   return `<div class="field ${errors.architecture ? 'has-error' : ''}">
     <label id="architecture-label">站点架构</label>
     <div class="architecture-control">

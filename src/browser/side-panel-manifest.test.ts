@@ -21,10 +21,10 @@ describe('side panel manifest', () => {
     expect(manifest.action?.default_title).toBe('打开 Pocket Evo 站点导入插件');
   });
 
-  it('publishes extension version 1.1.0', () => {
+  it('publishes extension version 1.2.0', () => {
     const manifest = JSON.parse(readFileSync('public/manifest.json', 'utf8')) as ExtensionManifest;
 
-    expect(manifest.version).toBe('1.1.0');
+    expect(manifest.version).toBe('1.2.0');
   });
 
   it('opens a global side panel from the toolbar action instead of a transient popup', () => {
