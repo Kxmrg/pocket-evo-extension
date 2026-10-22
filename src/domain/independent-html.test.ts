@@ -12,6 +12,7 @@ const sites = [
  ['cinemageddon.net','cinemageddon','/browse.php'], ['hdbits.org','hdbits','/browse.php'],
  ['karagarga.in','karagarga','/browse.php'], ['www.torrentleech.org','torrentleech','/torrents/browse/index'],
  ['star-space.net','ying','/p_torrent/video_list_t.php'],
+ ['iptorrents.com','iptorrents','/t'],
 ] as const;
 function snapshot(host: string, path = '/', scheme = 'https'): PageSnapshot {
  return {url:`${scheme}://${host}${path}`,origin:`${scheme}://${host}`,host,title:host,

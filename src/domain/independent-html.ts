@@ -1,12 +1,12 @@
 import type { ArchitectureId } from './types';
-export const independentHtml = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying']);
+export const independentHtml = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','iptorrents']);
 export const independentHtmlDefaults: Partial<Record<ArchitectureId,string>> = {
   exoticaz:'/torrents', filelist:'/browse.php', cinemageddon:'/browse.php',
-  hdbits:'/browse.php', karagarga:'/browse.php', torrentleech:'/torrents/browse/index', ying:'/p_torrent/video_list_t.php',
+  hdbits:'/browse.php', karagarga:'/browse.php', torrentleech:'/torrents/browse/index', ying:'/p_torrent/video_list_t.php', iptorrents:'/t',
 };
 export const independentHtmlNames: Partial<Record<ArchitectureId,string>> = {
   exoticaz:'ExoticaZ', filelist:'FileList', cinemageddon:'Cinemageddon',
-  hdbits:'HDBits', karagarga:'KG', torrentleech:'TorrentLeech', ying:'Ying',
+  hdbits:'HDBits', karagarga:'KG', torrentleech:'TorrentLeech', ying:'Ying', iptorrents:'IPTorrents',
 };
 export function normalizeYingEntry(path:string):string {
   const u=new URL(path,'https://entry.invalid');
@@ -16,7 +16,7 @@ export function normalizeYingEntry(path:string):string {
 }
 export function validIndependentHtmlEntry(id:ArchitectureId,path:string):boolean {
   const u=new URL(id==='ying'?normalizeYingEntry(path):path,'https://entry.invalid');
-  const valid=id==='exoticaz'?/^\/torrents\/?$/.test(u.pathname):id==='ying'?['/p_torrent/video_list_t.php','/p_music/music_list_t.php'].includes(u.pathname):id==='torrentleech'?/^\/torrents\/browse\/index(?:\/|$)/.test(u.pathname):id==='filelist'?['/browse.php','/internal.php'].includes(u.pathname):u.pathname==='/browse.php';
+  const valid=id==='iptorrents'?u.pathname==='/t':id==='exoticaz'?/^\/torrents\/?$/.test(u.pathname):id==='ying'?['/p_torrent/video_list_t.php','/p_music/music_list_t.php'].includes(u.pathname):id==='torrentleech'?/^\/torrents\/browse\/index(?:\/|$)/.test(u.pathname):id==='filelist'?['/browse.php','/internal.php'].includes(u.pathname):u.pathname==='/browse.php';
   if (id==='torrentleech') {
     const parts=u.pathname.replace(/\/$/,'').split('/').slice(1);
     const keys=new Set(['categories','facets','query','added','orderby','order','page','imdbID','actor','tvmazeEpisodeID','igdbID','animeID','exact']);

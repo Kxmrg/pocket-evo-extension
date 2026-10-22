@@ -36,7 +36,7 @@ export interface PopupActions {
 }
 
 const architectureNames: Record<ArchitectureId, string> = {
-  exoticaz:'独立架构站点',filelist:'独立架构站点',cinemageddon:'独立架构站点',hdbits:'独立架构站点',karagarga:'独立架构站点',torrentleech:'独立架构站点',ying:'独立架构站点',
+  exoticaz:'独立架构站点',filelist:'独立架构站点',cinemageddon:'独立架构站点',hdbits:'独立架构站点',karagarga:'独立架构站点',torrentleech:'独立架构站点',ying:'独立架构站点',iptorrents:'独立架构站点',
   nexusphp: 'NexusPHP',
   api: '独立架构站点',
   tnode: '独立架构站点',
