@@ -157,7 +157,7 @@ export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
 
   if (['alpharatio.cc','anthelion.me','broadcasthe.net','brokenstones.is','dicmusic.com','gazellegames.net','hdf.world','passthepopcorn.me','redacted.sh','emparadise.rs','greatposterwall.com','jpopsuki.eu'].some(host => isHost(snapshot.host, host))) return fixed('gazelle', 'Gazelle / HTML');
 
-  if (isHost(snapshot.host, 'eiga.moi') || isHost(snapshot.host, 'blutopia.cc')) return fixed('unit3d', '固定 UNIT3D 域名');
+  if (isHost(snapshot.host, 'eiga.moi') || isHost(snapshot.host, 'blutopia.cc') || isHost(snapshot.host, 'lst.gg') || isHost(snapshot.host, 'seedpool.org')) return fixed('unit3d', '固定 UNIT3D 域名');
 
   const gazelle = scoreGazelle(snapshot);
   if (gazelle.score >= 4) return detectionFromScore(gazelle);

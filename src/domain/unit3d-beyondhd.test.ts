@@ -9,7 +9,7 @@ import type { PageSnapshot } from './types';
 function snapshot(host: string, path = '/torrents'): PageSnapshot {
  return { url:`https://${host}${path}`,origin:`https://${host}`,host,title:`Torrents - ${host}`,userAgent:'Fixture UA',meta:[],resources:[],links:[],textSample:'',storage:[],candidates:[{key:'passkey',value:'must-not-export',source:'fixture'}] };
 }
-it.each(['eiga.moi','blutopia.cc'])('imports %s as UNIT3D and preserves repeated filters while normalizing views', host => {
+it.each(['eiga.moi','blutopia.cc','lst.gg','seedpool.org'])('imports %s as UNIT3D and preserves repeated filters while normalizing views', host => {
  const s=snapshot(host,'/torrents?view=group&categories[]=1&categories[]=2&types[]=3');
  const detection=detectArchitecture(s);
  expect(detection).toMatchObject({id:'unit3d',supported:true});
