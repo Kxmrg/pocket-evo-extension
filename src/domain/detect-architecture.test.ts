@@ -170,6 +170,11 @@ describe('detectArchitecture', () => {
     expect(detectArchitecture(snapshot(`https://${host}/index.php`)).id).toBe('unknown');
   });
 
+  it('recognizes the migrated HDDolby host exactly', () => {
+    expect(detectArchitecture(snapshot('https://www.uhddolby.com/')).id).toBe('nexusphp');
+    expect(detectArchitecture(snapshot('https://www.uhddolby.com.example.org/')).id).toBe('unknown');
+  });
+
   it('recognizes an explicit NexusPHP marker', () => {
     const result = detectArchitecture(snapshot('https://nexus.example/', {
       meta: [{ name: 'generator', property: '', content: 'NexusPHP' }],
