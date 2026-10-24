@@ -143,6 +143,12 @@ function detectionFromScore(result: ScoreResult): DetectionResult {
 }
 
 export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
+  // Adapted NP fork: its homepage brands itself PTT-NP and exposes only two
+  // generic route signals. Keep the override limited to verified site hosts.
+  const host = snapshot.host.toLowerCase().replace(/\.$/, '');
+  if (host === 'pttime.org' || host === 'www.pttime.org') {
+    return fixed('nexusphp', '已适配 PTTime / PTT-NP 域名');
+  }
   if (isHost(snapshot.host, 'hd-space.org') || isHost(snapshot.host, 'hd-torrents.org') || /powered by\s+(?:btitracker|xbtit)\b/i.test(searchable(snapshot))) return fixed('btitracker', 'BtiTracker / xbtit');
   const api = apiProtocol(snapshot.origin);
   if (api) return fixed(api, '独立架构站点：按域名识别');

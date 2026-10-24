@@ -154,6 +154,22 @@ describe('detectArchitecture', () => {
     }))).toEqual({ id: 'unknown', supported: false, confidence: 'unknown', reasons: [] });
   });
 
+  it.each(['pttime.org', 'www.pttime.org'])('recognizes adapted PTTime homepage: %s', (host) => {
+    const result = detectArchitecture(snapshot(`https://${host}/index.php`, {
+      title: 'PTT :: 首页',
+      textSample: 'Powered by PTT-NP',
+      links: [
+        { text: '综合', href: `https://${host}/torrents.php` },
+        { text: '个人中心', href: `https://${host}/userdetails.php?id=1` },
+      ],
+    }));
+    expect(result).toMatchObject({ id: 'nexusphp', supported: true, confidence: 'certain' });
+  });
+
+  it.each(['notpttime.org', 'pttime.org.example.com', 'unverified.pttime.org'])('does not extend PTTime mapping to %s', (host) => {
+    expect(detectArchitecture(snapshot(`https://${host}/index.php`)).id).toBe('unknown');
+  });
+
   it('recognizes an explicit NexusPHP marker', () => {
     const result = detectArchitecture(snapshot('https://nexus.example/', {
       meta: [{ name: 'generator', property: '', content: 'NexusPHP' }],
