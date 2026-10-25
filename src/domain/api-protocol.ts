@@ -6,7 +6,7 @@ export function apiProtocol(address: string): ArchitectureId | null {
     const domains: Record<string, ArchitectureId> = {
       'beyond-hd.me':'beyondhd',
       'exoticaz.to':'exoticaz','filelist.io':'filelist','cinemageddon.net':'cinemageddon',
-      'hdbits.org':'hdbits','karagarga.in':'karagarga','www.torrentleech.org':'torrentleech','star-space.net':'ying','iptorrents.com':'iptorrents',
+      'hdbits.org':'hdbits','karagarga.in':'karagarga','www.torrentleech.org':'torrentleech','star-space.net':'ying','iptorrents.com':'iptorrents','www.yzyy.org':'yzyy',
       'zhuque.in':'tnode', 'www.zhuque.in':'tnode',
       'api.m-team.cc':'mtorrent', 'api.m-team.io':'mtorrent',
       'kp.m-team.cc':'mtorrent', 'kp.m-team.io':'mtorrent',
@@ -16,4 +16,4 @@ export function apiProtocol(address: string): ArchitectureId | null {
     return domains[u.hostname] ?? null;
   } catch { return null; }
 }
-export const independentApis = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','iptorrents','api','beyondhd','tnode','mtorrent','haidan','sunnypt','rousi','yema','cola']);
+export const independentApis = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','iptorrents','yzyy','api','beyondhd','tnode','mtorrent','haidan','sunnypt','rousi','yema','cola']);

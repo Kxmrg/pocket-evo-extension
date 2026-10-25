@@ -12,7 +12,7 @@ export type ArchitectureId =
   | 'unit3d'
   | 'btitracker'
   | 'beyondhd'
-  | 'exoticaz' | 'filelist' | 'cinemageddon' | 'hdbits' | 'karagarga' | 'torrentleech' | 'ying' | 'iptorrents'
+  | 'exoticaz' | 'filelist' | 'cinemageddon' | 'hdbits' | 'karagarga' | 'torrentleech' | 'ying' | 'iptorrents' | 'yzyy'
   | 'private'
   | 'unknown';
 

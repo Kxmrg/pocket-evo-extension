@@ -1,12 +1,12 @@
 import type { ArchitectureId } from './types';
-export const independentHtml = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','iptorrents']);
+export const independentHtml = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','iptorrents','yzyy']);
 export const independentHtmlDefaults: Partial<Record<ArchitectureId,string>> = {
   exoticaz:'/torrents', filelist:'/browse.php', cinemageddon:'/browse.php',
-  hdbits:'/browse.php', karagarga:'/browse.php', torrentleech:'/torrents/browse/index', ying:'/p_torrent/video_list_t.php', iptorrents:'/t',
+  hdbits:'/browse.php', karagarga:'/browse.php', torrentleech:'/torrents/browse/index', ying:'/p_torrent/video_list_t.php', iptorrents:'/t', yzyy:'/torrents.php',
 };
 export const independentHtmlNames: Partial<Record<ArchitectureId,string>> = {
   exoticaz:'ExoticaZ', filelist:'FileList', cinemageddon:'Cinemageddon',
-  hdbits:'HDBits', karagarga:'KG', torrentleech:'TorrentLeech', ying:'Ying', iptorrents:'IPTorrents',
+  hdbits:'HDBits', karagarga:'KG', torrentleech:'TorrentLeech', ying:'Ying', iptorrents:'IPTorrents', yzyy:'YzYY',
 };
 export function normalizeYingEntry(path:string):string {
   const u=new URL(path,'https://entry.invalid');
@@ -16,13 +16,18 @@ export function normalizeYingEntry(path:string):string {
 }
 export function validIndependentHtmlEntry(id:ArchitectureId,path:string):boolean {
   const u=new URL(id==='ying'?normalizeYingEntry(path):path,'https://entry.invalid');
-  const valid=id==='iptorrents'?u.pathname==='/t':id==='exoticaz'?/^\/torrents\/?$/.test(u.pathname):id==='ying'?['/p_torrent/video_list_t.php','/p_music/music_list_t.php'].includes(u.pathname):id==='torrentleech'?/^\/torrents\/browse\/index(?:\/|$)/.test(u.pathname):id==='filelist'?['/browse.php','/internal.php'].includes(u.pathname):u.pathname==='/browse.php';
+  const valid=id==='yzyy'?u.pathname==='/torrents.php':id==='iptorrents'?u.pathname==='/t':id==='exoticaz'?/^\/torrents\/?$/.test(u.pathname):id==='ying'?['/p_torrent/video_list_t.php','/p_music/music_list_t.php'].includes(u.pathname):id==='torrentleech'?/^\/torrents\/browse\/index(?:\/|$)/.test(u.pathname):id==='filelist'?['/browse.php','/internal.php'].includes(u.pathname):u.pathname==='/browse.php';
   if (id==='torrentleech') {
     const parts=u.pathname.replace(/\/$/,'').split('/').slice(1);
     const keys=new Set(['categories','facets','query','added','orderby','order','page','imdbID','actor','tvmazeEpisodeID','igdbID','animeID','exact']);
     const seen=new Set<string>();
     if (u.search || (parts.length-3)%2!==0) return false;
     for(let i=3;i<parts.length;i+=2) {const key=parts[i]!;if(!keys.has(key)||seen.has(key)||!parts[i+1]) return false;seen.add(key);}
+  }
+  if(id==='yzyy') {
+    const arrays=new Set(['cat[]','medium[]','vcodec[]','acodec[]','res[]','tag[]']);
+    const scalars=new Set(['ajax','page','keyword','promo','station','sort','dir']);
+    if([...u.searchParams.keys()].some(k=>!arrays.has(k)&&(!scalars.has(k)||u.searchParams.getAll(k).length!==1))) return false;
   }
   if(id==='ying') {
     const keys=new Set(['page','seeder','search','area','column','sort','btn_search',...(u.pathname.startsWith('/p_music/')?['format','bitrate','media','tag']:['tag_gf','tag_free','tag_zz','complete','source','cat','suggest'])]);

@@ -52,7 +52,7 @@ describe('renderPopup', () => {
     renderPopup(root, { kind: 'idle' }, actions());
 
     expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket Evo');
-    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v1.2.0');
+    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v1.3.1');
     expect(root.querySelectorAll('[data-home-guide] li')).toHaveLength(4);
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点，停留在种子列表页面');
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('点击开始读取站点数据');
@@ -88,14 +88,14 @@ describe('renderPopup', () => {
     expect(root.querySelectorAll('button')).toHaveLength(1);
     expect(root.querySelector('button')?.textContent).toContain('允许读取本站');
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.2.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.3.1');
   });
 
   it('uses the plugin header and omits technical guidance on the read error page', () => {
     renderPopup(root, { kind: 'error', message: '请在普通 HTTP 或 HTTPS 站点中使用' }, actions());
 
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.2.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.3.1');
     expect(root.querySelector('h1')?.textContent).toBe('未能读取站点');
     expect(root.textContent).not.toContain('请在普通 HTTP 或 HTTPS 站点中使用');
     expect(root.querySelector('[role="alert"]')).toBeNull();
@@ -129,7 +129,7 @@ describe('renderPopup', () => {
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('NexusPHP');
     expect(root.querySelector('[data-home-guide]')).toBeNull();
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.2.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.3.1');
     expect(root.querySelector('h2')?.textContent).toBe('站点信息');
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
     expect(handlers.onRefresh).toHaveBeenCalledOnce();
@@ -293,7 +293,7 @@ describe('renderPopup', () => {
     expect(root.querySelector('#qr-canvas')).not.toBeNull();
     expect(root.querySelector('#qr-canvas')?.getAttribute('aria-label')).toBe('Pocket Evo 站点导入二维码');
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Evo 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.2.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.3.1');
     expect(root.querySelector('.payload-meta')).toBeNull();
     const siteInfo = root.querySelector('[data-qr-site-info]');
     expect(siteInfo?.textContent).toContain('架构');
