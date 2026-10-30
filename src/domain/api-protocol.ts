@@ -8,6 +8,8 @@ export function apiProtocol(address: string): ArchitectureId | null {
       'exoticaz.to':'exoticaz','filelist.io':'filelist','cinemageddon.net':'cinemageddon',
       'hdbits.org':'hdbits','karagarga.in':'karagarga','www.torrentleech.org':'torrentleech','star-space.net':'ying','iptorrents.com':'iptorrents','www.yzyy.org':'yzyy',
       'zhuque.in':'tnode', 'www.zhuque.in':'tnode',
+      'm-team.cc':'mtorrent', 'm-team.io':'mtorrent',
+      'h5.m-team.cc':'mtorrent', 'h5.m-team.io':'mtorrent',
       'api.m-team.cc':'mtorrent', 'api.m-team.io':'mtorrent',
       'kp.m-team.cc':'mtorrent', 'kp.m-team.io':'mtorrent',
       'zp.m-team.cc':'mtorrent', 'zp.m-team.io':'mtorrent',

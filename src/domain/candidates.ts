@@ -24,9 +24,9 @@ export interface CandidateSelection {
 const aliases: Record<CandidateField, RegExp> = {
   csrfToken: /(?:^|[-_.])(?:x[-_.]?)?csrf(?:[-_.]?token)?$/i,
   apiToken: /(?:x[-_.]?api[-_.]?key|api[-_.]?key|access[-_.]?token|authorization|bearer[-_.]?token)/i,
-  webToken: /^(?:auth|token)$/i,
-  webDeviceId: /^did$/i,
-  webVisitorId: /^visitorId$/i,
+  webToken: /^(?:auth|token|auth_token)$/i,
+  webDeviceId: /^(?:did|device_id)$/i,
+  webVisitorId: /^(?:visitorId|visitor_id)$/i,
   uid: /^(?:uid|user[-_.]?id|userid|member[-_.]?id)$/i,
   passkey: /pass[-_.]?key/i,
 };
@@ -64,6 +64,24 @@ export function selectCandidate(field: CandidateField, snapshot: PageSnapshot): 
   const found: FieldCandidate[] = [];
   const pattern = aliases[field];
 
+  if (/^h5\.m-team\.(cc|io)$/.test(snapshot.host)) {
+    const mobileKeys: Partial<Record<CandidateField, string>> = {
+      webToken: 'auth_token', webDeviceId: 'device_id', webVisitorId: 'visitor_id', uid: 'user_data',
+    };
+    const key = mobileKeys[field];
+    if (key) {
+      const stored = snapshot.storage.find(entry => entry.area === 'local' && entry.key === key);
+      let value = stored?.value.trim() ?? '';
+      if (field === 'uid') {
+        try {
+          const id = String(JSON.parse(value || '{}').id ?? '');
+          value = /^[1-9][0-9]{0,19}$/.test(id) ? id : '';
+        } catch { value = ''; }
+      }
+      // Mobile authentication must never fall back to stale PC storage or other users' links.
+      return {value, alternatives: [], needsConfirmation: false};
+    }
+  }
   if (field === 'uid') {
     const currentUser = snapshot.candidates.find((candidate) => (
       candidate.source === 'current-user-profile' && pattern.test(candidate.key)

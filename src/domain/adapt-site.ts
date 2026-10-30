@@ -73,13 +73,9 @@ function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
 
 function siteAddress(id: ArchitectureId, snapshot: PageSnapshot): string {
   if (id !== 'mtorrent') return snapshot.origin.replace(/\/$/, '');
-  if (snapshot.host === 'api.m-team.cc' || snapshot.host.endsWith('.m-team.cc')) {
-    return 'https://api.m-team.cc';
-  }
-  if (snapshot.host === 'api.m-team.io' || snapshot.host.endsWith('.m-team.io')) {
-    return 'https://api.m-team.io';
-  }
-  return snapshot.origin.replace(/\/$/, '');
+  const io = snapshot.host === 'm-team.io' || snapshot.host.endsWith('.m-team.io');
+  const mobile = snapshot.host === 'h5.m-team.cc' || snapshot.host === 'h5.m-team.io';
+  return `https://${mobile ? 'h5' : io ? 'zp' : 'kp'}.m-team.${io ? 'io' : 'cc'}`;
 }
 
 function addSelectionMetadata(

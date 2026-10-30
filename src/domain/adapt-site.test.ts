@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { detectArchitecture } from './detect-architecture';
 import { adaptSite } from './adapt-site';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
 
@@ -51,9 +52,9 @@ describe('adaptSite', () => {
   });
 
   it.each([
-    ['https://kp.m-team.cc/browse', 'https://api.m-team.cc'],
-    ['https://zp.m-team.io/browse', 'https://api.m-team.io'],
-    ['https://api.m-team.cc/browse', 'https://api.m-team.cc'],
+    ['https://kp.m-team.cc/browse', 'https://kp.m-team.cc'],
+    ['https://zp.m-team.io/browse', 'https://zp.m-team.io'],
+    ['https://api.m-team.cc/browse', 'https://kp.m-team.cc'],
   ])('normalizes M-Team address %s to %s', (url, address) => {
     const draft = adaptSite(input('mtorrent', url, {
       links: [{ text: '我的资料', href: `${new URL(url).origin}/profile/detail/295964` }],
@@ -100,3 +101,20 @@ describe('adaptSite', () => {
     });
   });
 });
+
+for (const zone of ['cc', 'io']) {
+  it(`extracts mobile MT ${zone} credentials without losing web origin`, () => {
+    const source = input('mtorrent', `https://h5.m-team.${zone}/index#/home`, {
+      storage: [
+        {area:'local',key:'auth_token',value:'mobile-auth'},
+        {area:'local',key:'device_id',value:'mobile-did'},
+        {area:'local',key:'visitor_id',value:'mobile-vid'},
+        {area:'local',key:'user_data',value:JSON.stringify({id: '42', username: 'sample'})},
+      ],
+    });
+    expect(detectArchitecture(source.snapshot).id).toBe('mtorrent');
+    expect(adaptSite(source)).toMatchObject({address:`https://h5.m-team.${zone}`,
+      passkey:'42',webToken:'mobile-auth',webDeviceId:'mobile-did',webVisitorId:'mobile-vid',cookie:''});
+    expect(adaptSite(source).pages[0]?.path).toBe('/browse');
+  });
+}

@@ -39,6 +39,22 @@ export function normalizeEntryPath(id: ArchitectureId, path: string): string {
 export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string, architecture?: ArchitectureId): DraftPage | null {
   try {
     const current = new URL(snapshot.url);
+    if (apiProtocol(current.origin) === 'mtorrent' && /^h5\.m-team\.(cc|io)$/.test(current.hostname)) {
+      const route = new URL(current.hash.slice(1), current.origin);
+      if (route.pathname !== '/torrents' || route.searchParams.getAll('mode').length > 1) return null;
+      const mode = route.searchParams.get('mode') || 'normal';
+      route.searchParams.delete('mode');
+      route.searchParams.delete('page');
+      const sources = route.searchParams.getAll('sources');
+      if (sources.length) {
+        if (route.searchParams.has('source')) return null;
+        route.searchParams.delete('sources');
+        for (const source of sources) route.searchParams.append('source', source);
+      }
+      const path = `/browse${mode === 'normal' ? '' : '/' + mode}${route.search}`;
+      return validEntry('mtorrent', path) ? {name, path, tags:null, selected:true} : null;
+    }
+
     return {
       name,
       path: architecture === 'unit3d' || architecture === 'ying' || architecture === 'karagarga' ? normalizeEntryPath(architecture, `${current.pathname}${current.search}`) : apiProtocol(current.origin) === 'yema' && current.hash.startsWith('#/') ? current.hash.slice(1) : `${current.pathname || '/'}${current.search}`,
