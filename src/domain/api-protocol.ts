@@ -4,6 +4,7 @@ export function apiProtocol(address: string): ArchitectureId | null {
     const u = new URL(address);
     if ((u.protocol !== 'https:' && !(u.protocol === 'http:' && u.hostname === 'cinemageddon.net')) || u.port || u.username || u.password) return null;
     const domains: Record<string, ArchitectureId> = {
+      'piggo.me':'piggo',
       'beyond-hd.me':'beyondhd',
       'exoticaz.to':'exoticaz','filelist.io':'filelist','cinemageddon.net':'cinemageddon',
       'hdbits.org':'hdbits','karagarga.in':'karagarga','www.torrentleech.org':'torrentleech','star-space.net':'ying','iptorrents.com':'iptorrents','www.yzyy.org':'yzyy',
@@ -18,4 +19,4 @@ export function apiProtocol(address: string): ArchitectureId | null {
     return domains[u.hostname] ?? null;
   } catch { return null; }
 }
-export const independentApis = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','iptorrents','yzyy','api','beyondhd','tnode','mtorrent','haidan','sunnypt','rousi','yema','cola']);
+export const independentApis = new Set<ArchitectureId>(['exoticaz','filelist','cinemageddon','hdbits','karagarga','torrentleech','ying','iptorrents','yzyy','api','beyondhd','tnode','mtorrent','haidan','sunnypt','rousi','yema','cola','piggo']);

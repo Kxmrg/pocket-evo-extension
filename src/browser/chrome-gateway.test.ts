@@ -1,9 +1,26 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getActivePageContext, readCookies, toOriginPattern } from './chrome-gateway';
+import { getActivePageContext, readCookies, readPageSnapshot, toOriginPattern } from './chrome-gateway';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('toOriginPattern', () => {
+  it('reads Piggo visitor from MAIN world only for matching page and token', async () => {
+    const snapshot = {url:'https://piggo.me/torrents',origin:'https://piggo.me',host:'piggo.me',storage:[{area:'local',key:'pig_token',value:'fixture'}]};
+    const visitorId = '0123456789abcdef0123456789abcdef';
+    const executeScript = vi.fn().mockResolvedValueOnce([{result:snapshot}]).mockResolvedValueOnce([{result:{url:snapshot.url,token:'fixture',visitorId}}]);
+    vi.stubGlobal('chrome', {scripting:{executeScript}});
+    await expect(readPageSnapshot(42)).resolves.toMatchObject({pigVisitorId:visitorId});
+    expect(executeScript.mock.calls[1]?.[0]).toMatchObject({world:'MAIN',target:{tabId:42,frameIds:[0]}});
+  });
+
+  it.each(['changed-token','changed-url'])('does not combine Piggo credentials after %s', async (change) => {
+    const snapshot = {url:'https://piggo.me/torrents',origin:'https://piggo.me',host:'piggo.me',storage:[{area:'local',key:'pig_token',value:'fixture'}]};
+    const main = {url:change === 'changed-url' ? 'https://piggo.me/other' : snapshot.url,token:change === 'changed-token' ? 'other' : 'fixture',visitorId:'0'.repeat(32)};
+    const executeScript = vi.fn().mockResolvedValueOnce([{result:snapshot}]).mockResolvedValueOnce([{result:main}]);
+    vi.stubGlobal('chrome', {scripting:{executeScript}});
+    expect((await readPageSnapshot(42)).pigVisitorId).toBeUndefined();
+  });
+
   it('returns the exact HTTP(S) origin pattern', () => {
     expect(toOriginPattern('https://pt.example.com/path?q=1')).toBe('https://pt.example.com/*');
     expect(toOriginPattern('http://localhost:8080/page')).toBe('http://localhost:8080/*');

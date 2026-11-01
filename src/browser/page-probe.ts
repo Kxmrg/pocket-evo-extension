@@ -84,7 +84,10 @@ export function collectPageSnapshot(): PageSnapshot {
       for (let index = 0; index < store.length && storage.length < 500; index += 1) {
         const key = store.key(index);
         if (!key) continue;
-        storage.push({ area, key: limit(key, 300), value: limit(store.getItem(key) ?? '') });
+        const value = store.getItem(key) ?? '';
+        // A truncated JWT can still look valid; never import a partial token.
+        if (area === 'local' && key === 'pig_token' && value.length > maxValue) continue;
+        storage.push({ area, key: limit(key, 300), value: limit(value) });
       }
     } catch {
       // Storage may be blocked by the site or browser privacy policy.

@@ -8,7 +8,7 @@ import { mapCategoriesToTags } from './site-tags';
 
 export interface SiteDraft {
   architecture: ArchitectureId;
-  scheme: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | null;
+  scheme: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | null;
   name: string;
   address: string;
   cookie: string;
@@ -23,6 +23,7 @@ export interface SiteDraft {
   downloadTags: string | null;
 
   token: string | null;
+  pigVisitorId?: string | null;
 
 
   fieldWarnings: Record<string, string>;
@@ -35,7 +36,7 @@ export interface AdaptSiteInput {
   cookieHeader: string;
 }
 
-const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>> = {
+const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
@@ -44,6 +45,7 @@ const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>> 
   rousi: 5,
   yema: 6,
   cola: 7,
+  piggo: 8,
 };
 
 function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
@@ -52,6 +54,7 @@ function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
   if (id === 'rousi') return 'Rousi';
   if (id === 'yema') return 'YemaPT';
   if (id === 'cola') return '可乐';
+  if (id === 'piggo') return '猪猪';
   if (id === 'private') return privateSiteForHost(snapshot.host)?.name ?? snapshot.host;
   const withoutGenerator = snapshot.title.replace(/\s*[-|｜:]?\s*Powered by\b.*$/i, '');
   if (id === 'unit3d') {
@@ -94,12 +97,13 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
   const warnings: Record<string, string> = {};
   const alternatives: Record<string, FieldCandidate[]> = {};
   const passkey = selectCandidate('passkey', snapshot);
-  const cookie = detection.id === 'mtorrent' ? '' : cookieHeader;
+  const cookie = detection.id === 'mtorrent' || detection.id === 'piggo' ? '' : cookieHeader;
   let mTorrentUid = '';
   let webToken = '';
   let webDeviceId = '';
   let webVisitorId = '';
   let token = '';
+  let pigVisitorId = '';
 
   if (detection.id === 'mtorrent') {
     const uid = selectCandidate('uid', snapshot);
@@ -118,8 +122,19 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     warnings.token = '请前往控制台实验室复制令牌并手动填写';
   }
 
-  if (!cookie && detection.id !== 'unknown') warnings.cookie ??= '未自动获取 Cookie';
-  if (detection.id !== 'mtorrent') {
+  if (detection.id === 'piggo') {
+    // Only the exact Piggo HTTPS origin may supply this site's bearer token.
+    if (snapshot.origin === 'https://piggo.me' && snapshot.host === 'piggo.me' &&
+        new URL(snapshot.url).origin === snapshot.origin) {
+      token = snapshot.storage.find((entry) => entry.area === 'local' && entry.key === 'pig_token')?.value ?? '';
+      if (/^[0-9a-f]{32}$/.test(snapshot.pigVisitorId ?? '')) pigVisitorId = snapshot.pigVisitorId!;
+    }
+    if (!token) warnings.token = '未获取登录信息，请先登录猪猪后重试';
+    if (!pigVisitorId) warnings.pigVisitorId = '未获取浏览器访客信息，请等待页面加载完成后刷新';
+  }
+
+  if (!cookie && detection.id !== 'unknown' && detection.id !== 'piggo') warnings.cookie ??= '未自动获取 Cookie';
+  if (detection.id !== 'mtorrent' && detection.id !== 'piggo') {
     if (passkey.needsConfirmation) warnings.passkey = 'Passkey 存在多个候选，请确认';
     if (passkey.alternatives.length > 0) alternatives.passkey = passkey.alternatives;
   }
@@ -136,10 +151,11 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     webToken: webToken || null,
     webDeviceId: webDeviceId || null,
     webVisitorId: webVisitorId || null,
+    pigVisitorId: pigVisitorId || null,
     pages: extractTorrentPages(detection.id, snapshot),
     passkey: detection.id === 'mtorrent'
       ? mTorrentUid || null
-      : independentHtml.has(detection.id) || detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'cola' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'btitracker' || detection.id === 'private' || detection.id === 'beyondhd'
+      : independentHtml.has(detection.id) || detection.id === 'piggo' || detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'cola' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'btitracker' || detection.id === 'private' || detection.id === 'beyondhd'
         ? null
         : passkey.value || null,
     userAgent: snapshot.userAgent || null,

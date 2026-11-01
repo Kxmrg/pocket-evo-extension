@@ -15,6 +15,7 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
   nexusphp: '/torrents.php',
   tnode: '/torrent/search',
   mtorrent: '/browse',
+  piggo: '/torrents',
   haidan: '/torrents.php',
   sunnypt: '/torrents?category=All',
   rousi: '/torrents',
@@ -91,6 +92,7 @@ export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot):
     return page(/^\/torrents\/?$/.test(u.pathname) ? normalizeEntryPath(id, `${u.pathname}${u.search}`) : '/torrents?view=list');
   }
   if (id === 'mtorrent') return page('/browse');
+  if (id === 'piggo') return page('/torrents');
   if (id === 'tnode') return page('/torrent/search');
   if (id === 'rousi') return page('/torrents');
   if (id === 'yema') return page('/torrent/list');

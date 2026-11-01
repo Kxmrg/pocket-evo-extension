@@ -3,6 +3,7 @@ export type ArchitectureId =
   | 'nexusphp'
   | 'tnode'
   | 'mtorrent'
+  | 'piggo'
   | 'haidan'
   | 'sunnypt'
   | 'rousi'
@@ -47,6 +48,7 @@ export interface PageSnapshot {
   textSample: string;
   storage: StorageEntry[];
   candidates: PageCandidate[];
+  pigVisitorId?: string;
 }
 
 export interface DetectionResult {

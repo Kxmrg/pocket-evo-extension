@@ -18,7 +18,7 @@ export function buildImportPayload(draft: SiteDraft) {
     ...(draft.importUserAgent && draft.userAgent ? {userAgent:draft.userAgent} : {}),
     ...(draft.tags ? {tags:splitTags(draft.tags)} : {}),
     ...(draft.downloadTags ? {downloadTags:splitTags(draft.downloadTags)} : {}),
-    secrets: mt ? {apiKey:draft.token,mtUid:draft.passkey,
+    secrets: draft.architecture === 'piggo' ? {pigToken:draft.token,pigVisitorId:draft.pigVisitorId} : mt ? {apiKey:draft.token,mtUid:draft.passkey,
       ...(draft.webToken ? {webToken:draft.webToken} : {}),
       ...(draft.webDeviceId ? {webDeviceId:draft.webDeviceId} : {}),
       ...(draft.webVisitorId ? {webVisitorId:draft.webVisitorId} : {}),

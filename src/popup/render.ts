@@ -46,6 +46,7 @@ const architectureNames: Record<ArchitectureId, string> = {
   rousi: '独立架构站点',
   yema: '独立架构站点',
   cola: '独立架构站点',
+  piggo: '独立架构站点',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
   btitracker: 'BtiTracker',
@@ -184,9 +185,9 @@ function pageRows(draft: SiteDraft): string {
 
 function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
-  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? 'API Key' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
+  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? 'API Key' : draft.architecture === 'piggo' ? '登录 Token' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
   const cookieLabel = 'Cookie';
-  const cookieField = draft.architecture === 'mtorrent'
+  const cookieField = draft.architecture === 'mtorrent' || draft.architecture === 'piggo'
     ? ''
     : credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state);
   const webTokenField = draft.architecture === 'mtorrent'
@@ -197,11 +198,11 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
     : '';
   const webVisitorIdField = draft.architecture === 'mtorrent'
     ? credentialField('webVisitorId', 'VID（可选）', draft.webVisitorId, 'webVisitorId', state)
-    : '';
+    : draft.architecture === 'piggo' ? credentialField('pigVisitorId', '浏览器访客信息', draft.pigVisitorId ?? null, 'pigVisitorId', state) : '';
   const tokenField = draft.architecture === 'haidan' || draft.architecture === 'tnode' || draft.architecture === 'nexusphp' || independentHtml.has(draft.architecture) || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'btitracker' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || independentHtml.has(draft.architecture) || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'btitracker' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'piggo' || independentHtml.has(draft.architecture) || draft.architecture === 'rousi' || draft.architecture === 'yema' || draft.architecture === 'cola' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'btitracker' || draft.architecture === 'private' || draft.architecture === 'beyondhd'
     ? ''
     : credentialField('passkey', draft.architecture === 'mtorrent' ? 'UID' : 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;

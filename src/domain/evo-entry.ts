@@ -25,6 +25,11 @@ export function validEntry(architecture: ArchitectureId, path: string): boolean 
   if (architecture === 'gazelle') return u.pathname === '/torrents.php' && !u.searchParams.has('id') && !u.searchParams.has('torrentid') && !u.searchParams.has('torrentId') && ['', 'basic', 'advanced'].includes(u.searchParams.get('action') ?? '');
   if (architecture === 'unit3d') return /^\/torrents\/?$/.test(u.pathname);
   if (architecture === 'beyondhd') return /^\/torrents\/?$/.test(u.pathname) || /^\/categories\/[^/]+\.[1-9][0-9]*$/.test(u.pathname);
+  if (architecture === 'piggo') {
+    const paths = new Set(['/torrents', ...['movie','tv','children','anime','variety','documentary','sports','music','picbook','withaudio'].map(category => `/torrents/${category}`)]);
+    return paths.has(u.pathname) && [...u.searchParams.keys()].every(key =>
+      key === 'tag' && u.searchParams.getAll(key).length === 1 && /^[1-9]\d{0,9}(?:,[1-9]\d{0,9}){0,21}$/.test(u.searchParams.get(key) ?? ''));
+  }
   if (architecture === 'mtorrent') {
     const parts = u.pathname.split('/').filter(Boolean);
     if (parts[0] !== 'browse' || parts.length > 2 || !mtModes.has(parts[1] ?? 'normal')) return false;

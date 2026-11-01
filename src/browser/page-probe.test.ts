@@ -14,6 +14,12 @@ afterEach(() => {
 });
 
 describe('collectPageSnapshot', () => {
+  it('does not silently truncate a Piggo token into a plausible credential', () => {
+    localStorage.setItem('pig_token', `eyJ.${'a'.repeat(5_000)}.signature`);
+    expect(collectPageSnapshot().storage.some((entry) => entry.key === 'pig_token')).toBe(false);
+    localStorage.setItem('pig_token', 'eyJ.payload.signature');
+    expect(collectPageSnapshot().storage).toContainEqual({area:'local',key:'pig_token',value:'eyJ.payload.signature'});
+  });
   it('marks the HaiDan top navigation profile as the current user UID', () => {
     document.body.innerHTML = `
       <div class="userinfo medium border-box">

@@ -45,6 +45,9 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
 
   try {
     const detection = detectArchitecture(snapshot);
+    if (detection.id === 'piggo' && context.origin !== snapshot.origin) {
+      return { state: 'error', message: '当前页面已变化，请重新读取站点信息' };
+    }
     if (!detection.supported && detection.id !== 'unknown') {
       return { state: 'unsupported', detection };
     }
@@ -52,14 +55,16 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
     const cookieUrl = detection.id === 'cola' ? new URL('/api/v1/me', context.origin).href : context.url;
     let cookies: CookieLike[] = [];
     let cookieReadFailed = false;
-    try {
-      cookies = await deps.readCookies(cookieUrl, context.tabId);
-    } catch {
-      cookieReadFailed = true;
+    if (detection.id !== 'piggo') {
+      try {
+        cookies = await deps.readCookies(cookieUrl, context.tabId);
+      } catch {
+        cookieReadFailed = true;
+      }
     }
     const cookieHeader = mergeCookieHeaders(
       formatCookieHeader(cookies, cookieUrl),
-      snapshot.documentCookie ?? '',
+      detection.id === 'piggo' ? '' : snapshot.documentCookie ?? '',
     );
     const snapshotWithCookieCandidates: PageSnapshot = {
       ...snapshot,
@@ -70,7 +75,7 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
       ],
     };
     const draft = adaptSite({ detection, snapshot: snapshotWithCookieCandidates, cookieHeader });
-    if (detection.id === 'mtorrent') {
+    if (detection.id === 'mtorrent' || detection.id === 'piggo') {
       delete draft.fieldWarnings.cookie;
     } else if (cookieReadFailed) {
       draft.fieldWarnings.cookie = cookieHeader

@@ -2,6 +2,17 @@ import type { CookieLike } from '../domain/cookies';
 import type { PageSnapshot } from '../domain/types';
 import { collectPageSnapshot } from './page-probe';
 
+// Serialized by chrome.scripting and executed in the page's MAIN world.
+export function readPiggoSession(): { url: string; token: string; visitorId: string } | null {
+  if (window.location.origin !== 'https://piggo.me') return null;
+  try {
+    const value = (window as Window & { __ptvisitorid?: unknown }).__ptvisitorid;
+    const token = window.localStorage.getItem('pig_token') ?? '';
+    if (typeof value !== 'string' || !/^[0-9a-f]{32}$/.test(value) || token.length > 4096) return null;
+    return { url: window.location.href, token, visitorId: value };
+  } catch { return null; }
+}
+
 export interface ActivePageContext {
   tabId: number;
   url: string;
@@ -63,6 +74,18 @@ export async function readPageSnapshot(tabId: number): Promise<PageSnapshot> {
   });
   const snapshot = results[0]?.result as PageSnapshot | undefined;
   if (!snapshot) throw new Error('页面未返回可读取的信息');
+  if (snapshot.origin === 'https://piggo.me' && snapshot.host === 'piggo.me') {
+    try {
+      const main = await chrome.scripting.executeScript({
+        target: { tabId, frameIds: [0] }, world: 'MAIN', func: readPiggoSession,
+      });
+      const session = main[0]?.result as ReturnType<typeof readPiggoSession>;
+      const token = snapshot.storage.find((entry) => entry.area === 'local' && entry.key === 'pig_token')?.value;
+      if (session?.url === snapshot.url && session.token === token && /^[0-9a-f]{32}$/.test(session.visitorId)) {
+        snapshot.pigVisitorId = session.visitorId;
+      }
+    } catch { /* Validation will require a fresh read when the page is not ready. */ }
+  }
   return snapshot;
 }
 

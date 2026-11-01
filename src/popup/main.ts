@@ -26,7 +26,7 @@ const root: HTMLElement = rootElement;
 let state: PopupState = { kind: 'idle' };
 let activeContext: ActivePageContext | null = null;
 
-const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
+const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
@@ -35,6 +35,7 @@ const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
   rousi: 5,
   yema: 6,
   cola: 7,
+  piggo: 8,
 };
 
 function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
@@ -130,10 +131,11 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' || independentHtml.has(architecture) || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.token,
+        token: (architecture !== draft.architecture && (architecture === 'piggo' || draft.architecture === 'piggo')) || architecture === 'nexusphp' || independentHtml.has(architecture) || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.token,
         webToken: architecture === 'mtorrent' ? draft.webToken : null,
         webDeviceId: architecture === 'mtorrent' ? draft.webDeviceId : null,
         webVisitorId: architecture === 'mtorrent' ? draft.webVisitorId : null,
+        pigVisitorId: architecture === 'piggo' && architecture === draft.architecture ? draft.pigVisitorId : null,
         passkey: independentHtml.has(architecture) || architecture === 'rousi' || architecture === 'yema' || architecture === 'cola' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'btitracker' || architecture === 'private' || architecture === 'beyondhd' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
@@ -147,12 +149,13 @@ const actions: PopupActions = {
         case 'address': {
           const address = String(value);
           const architecture = independentApis.has(draft.architecture) ? apiProtocol(address) ?? 'api' : draft.architecture;
-          return { ...draft, address, architecture, scheme: schemeByArchitecture[architecture] ?? null, pages: draft.pages.map(page => ({ ...page, path: page.path === createManualPage(draft.architecture).path ? createManualPage(architecture).path : page.path })) };
+          return { ...draft, address, architecture, pigVisitorId: architecture === 'piggo' && architecture === draft.architecture ? draft.pigVisitorId : null, token: architecture !== draft.architecture && (architecture === 'piggo' || draft.architecture === 'piggo') ? null : draft.token, scheme: schemeByArchitecture[architecture] ?? null, pages: draft.pages.map(page => ({ ...page, path: page.path === createManualPage(draft.architecture).path ? createManualPage(architecture).path : page.path })) };
         }
         case 'cookie': return { ...draft, cookie: String(value), fieldWarnings: { ...draft.fieldWarnings, cookie: '' } };
         case 'webToken': return { ...draft, webToken: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webToken: '' } };
         case 'webDeviceId': return { ...draft, webDeviceId: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webDeviceId: '' } };
         case 'webVisitorId': return { ...draft, webVisitorId: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webVisitorId: '' } };
+        case 'pigVisitorId': return { ...draft, pigVisitorId: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, pigVisitorId: '' } };
         case 'token': return { ...draft, token: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, token: '' } };
         case 'passkey': return { ...draft, passkey: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, passkey: '' } };
         case 'userAgent': return { ...draft, userAgent: String(value) || null };
