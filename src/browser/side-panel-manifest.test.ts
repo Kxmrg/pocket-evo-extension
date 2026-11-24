@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 interface ExtensionManifest {
   name?: string;
+  description?: string;
+  default_locale?: string;
   version?: string;
   minimum_chrome_version?: string;
   permissions?: string[];
@@ -17,14 +19,25 @@ describe('side panel manifest', () => {
   it('uses the product name consistently in Chrome', () => {
     const manifest = JSON.parse(readFileSync('public/manifest.json', 'utf8')) as ExtensionManifest;
 
-    expect(manifest.name).toBe('Pocket Evo 站点导入插件');
-    expect(manifest.action?.default_title).toBe('打开 Pocket Evo 站点导入插件');
+    expect(manifest.default_locale).toBe('en');
+    for (const locale of ['en', 'zh_CN', 'fr', 'de', 'es']) {
+      const messages = JSON.parse(readFileSync(`public/_locales/${locale}/messages.json`, 'utf8'));
+      for (const value of [manifest.name, manifest.description, manifest.action?.default_title]) {
+        const key = value?.match(/^__MSG_(\w+)__$/)?.[1];
+        expect(key).toBeTruthy();
+        expect(messages[key!]?.message).toContain('Pocket Evo');
+      }
+    }
   });
 
-  it('publishes extension version 1.4.5', () => {
+  it('keeps the extension and package versions aligned', () => {
     const manifest = JSON.parse(readFileSync('public/manifest.json', 'utf8')) as ExtensionManifest;
 
-    expect(manifest.version).toBe('1.4.5');
+    const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+    const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
+    expect(manifest.version).toBe(packageJson.version);
+    expect(lock.version).toBe(packageJson.version);
+    expect(lock.packages[''].version).toBe(packageJson.version);
   });
 
   it('opens a global side panel from the toolbar action instead of a transient popup', () => {

@@ -6,6 +6,7 @@ import {
   type CookieLike,
 } from '../domain/cookies';
 import { detectArchitecture } from '../domain/detect-architecture';
+import type { ImportIssue } from '../domain/import-issue';
 import type { DetectionResult, PageSnapshot } from '../domain/types';
 
 export interface CollectionContext {
@@ -25,14 +26,14 @@ export type CollectionResult =
   | { state: 'permission-required'; origin: string }
   | { state: 'unsupported'; detection: DetectionResult }
   | { state: 'ready'; detection: DetectionResult; draft: SiteDraft }
-  | { state: 'error'; message: string };
+  | { state: 'error'; issue: ImportIssue };
 
 export async function collectSiteDraft(deps: CollectionDeps): Promise<CollectionResult> {
   let context: CollectionContext;
   try {
     context = await deps.getContext();
   } catch {
-    return { state: 'error', message: '当前标签页读取失败（E_CONTEXT），请切回站点页面后重试' };
+    return { state: 'error', issue: { code: 'contextReadFailed' } };
   }
   if (!context.hasPermission) return { state: 'permission-required', origin: context.origin };
 
@@ -40,19 +41,19 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
   try {
     snapshot = await deps.readSnapshot();
   } catch {
-    return { state: 'error', message: '页面数据读取失败（E_PAGE），请刷新站点页面后重试' };
+    return { state: 'error', issue: { code: 'pageReadFailed' } };
   }
 
   try {
-    const detection = detectArchitecture(snapshot);
-    if (detection.id === 'piggo' && context.origin !== snapshot.origin) {
-      return { state: 'error', message: '当前页面已变化，请重新读取站点信息' };
+    if (context.origin !== snapshot.origin || new URL(snapshot.url).origin !== context.origin) {
+      return { state: 'error', issue: { code: 'pageChanged' } };
     }
+    const detection = detectArchitecture(snapshot);
     if (!detection.supported && detection.id !== 'unknown') {
       return { state: 'unsupported', detection };
     }
     // Cola scopes its real HttpOnly session to the API path; /browse only has a marker.
-    const cookieUrl = detection.id === 'cola' ? new URL('/api/v1/me', context.origin).href : context.url;
+    const cookieUrl = detection.id === 'cola' ? new URL('/api/v1/me', snapshot.origin).href : snapshot.url;
     let cookies: CookieLike[] = [];
     let cookieReadFailed = false;
     if (detection.id !== 'piggo') {
@@ -78,16 +79,14 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
     if (detection.id === 'mtorrent' || detection.id === 'piggo') {
       delete draft.fieldWarnings.cookie;
     } else if (cookieReadFailed) {
-      draft.fieldWarnings.cookie = cookieHeader
-        ? 'Chrome 完整 Cookie 读取失败，已使用页面可见 Cookie，请确认'
-        : 'Chrome 完整 Cookie 读取失败，请手动填写';
+      draft.fieldWarnings.cookie = { code: cookieHeader ? 'cookieReadFallback' : 'cookieReadMissing' };
     } else if (cookies.length === 0 && cookieHeader) {
-      draft.fieldWarnings.cookie = 'Chrome 未返回完整 Cookie，已使用页面可见 Cookie，请确认';
+      draft.fieldWarnings.cookie = { code: 'cookieVisibleOnly' };
     } else if (!cookieHeader) {
-      draft.fieldWarnings.cookie = 'Chrome 和当前页面都未返回 Cookie，请确认已登录并允许读取本站';
+      draft.fieldWarnings.cookie = { code: 'cookieUnavailable' };
     }
     return { state: 'ready', detection, draft };
   } catch {
-    return { state: 'error', message: '站点数据解析失败（E_PARSE），请刷新页面后重试' };
+    return { state: 'error', issue: { code: 'parseFailed' } };
   }
 }

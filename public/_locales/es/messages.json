@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Importación de sitios Pocket Evo"
+  },
+  "extensionDescription": {
+    "message": "Genera un código QR de importación de Pocket Evo desde un sitio PT con la sesión iniciada."
+  },
+  "actionTitle": {
+    "message": "Abrir la importación de sitios Pocket Evo"
+  }
+}

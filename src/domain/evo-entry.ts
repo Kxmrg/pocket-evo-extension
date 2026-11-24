@@ -1,5 +1,6 @@
 import {independentHtml,validIndependentHtmlEntry,normalizeKaragargaEntry} from './independent-html';
 import type { ArchitectureId } from './types';
+import { safeIssueKeys, type ImportIssue } from './import-issue';
 
 const mtModes = new Set(['normal', 'adult', 'movie', 'music', 'tvshow', 'anime', 'waterfall', 'rss', 'rankings', 'all']);
 const mtFields = new Set(['cat', 'stand', 'team', 'source', 'medium', 'videoCodec', 'audioCodec']);
@@ -14,7 +15,7 @@ export function safeEntryPath(path: string): boolean {
     }
     if (!decoded.startsWith('/') || decoded.startsWith('//') || /[\\\x00-\x1f]/.test(decoded) || decoded.split('?')[0]?.split('/').includes('..')) return false;
     const u = new URL(decoded, 'https://entry.invalid');
-    return !u.hash && ![...u.searchParams.keys()].some(k => /^(passkey|authkey|token|access_token|api_key|apikey|cookie|password|authorization)$/i.test(k));
+    return !decoded.includes('#') && ![...u.searchParams.keys()].some(k => /^(passkey|authkey|token|access_token|api_key|apikey|cookie|password|authorization)$/i.test(k));
   } catch { return false; }
 }
 export function validEntry(architecture: ArchitectureId, path: string): boolean {
@@ -33,7 +34,7 @@ export function validEntry(architecture: ArchitectureId, path: string): boolean 
   if (architecture === 'mtorrent') {
     const parts = u.pathname.split('/').filter(Boolean);
     if (parts[0] !== 'browse' || parts.length > 2 || !mtModes.has(parts[1] ?? 'normal')) return false;
-    return [...u.searchParams.keys()].every(k => mtFields.has(k) && u.searchParams.getAll(k).length <= 100 && u.searchParams.getAll(k).every(v => /^[1-9]\d*$/.test(v)));
+    return [...u.searchParams.keys()].every(k => mtFields.has(k) && u.searchParams.getAll(k).length <= 100 && u.searchParams.getAll(k).every(v => /^[1-9]\d*$/.test(v) && BigInt(v) <= 9223372036854775807n));
   }
   if (architecture === 'tnode') {
     if (/^\/torrent\/search\/?$/.test(path)) return true;
@@ -63,19 +64,19 @@ export function validEntry(architecture: ArchitectureId, path: string): boolean 
 }
 
 /** Describe unsupported entries without ever echoing query values or credentials. */
-export function entryError(architecture: ArchitectureId, path: string): string | null {
+export function entryError(architecture: ArchitectureId, path: string): ImportIssue | null {
   if (architecture==='karagarga') path=normalizeKaragargaEntry(path);
-  if (!safeEntryPath(path)) return '地址不安全或格式错误，请使用不含凭据的站内相对地址';
+  if (!safeEntryPath(path)) return { code: 'entryUnsafe' };
   if (validEntry(architecture, path)) return null;
   if (architecture === 'mtorrent') {
     const u = new URL(path, 'https://entry.invalid');
-    if (!validEntry(architecture, u.pathname)) return 'MT 入口需为 /browse 或受支持的 /browse/分类';
-    const unsupported = [...new Set([...u.searchParams.keys()].filter(k => !mtFields.has(k)))];
+    if (!validEntry(architecture, u.pathname)) return { code: 'mtRouteUnsupported' };
+    const unsupported = [...u.searchParams.keys()].filter(k => !mtFields.has(k));
     if (unsupported.length) {
-      const keys = unsupported.filter(k => /^[A-Za-z][A-Za-z0-9_]{0,30}$/.test(k));
-      return `MT 暂不支持这些筛选参数${keys.length ? `：${keys.join('、')}` : ''}，请修改或取消选择此入口`;
+      const keys = safeIssueKeys(unsupported);
+      return keys.length ? { code: 'mtFiltersUnsupported', keys } : { code: 'mtFiltersUnsupported' };
     }
-    return 'MT 分类参数必须为正整数，每类最多100个';
+    return { code: 'mtIdsInvalid' };
   }
-  return '此入口路径或搜索参数不受 Evo 支持，请修改或取消选择此入口';
+  return { code: 'entryUnsupported' };
 }

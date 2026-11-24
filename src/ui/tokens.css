@@ -1,0 +1,48 @@
+@font-face {
+  font-family: Montserrat;
+  src: url('/fonts/Montserrat-Variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light dark;
+  --font-ui: Montserrat, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --primary: #2f6fed;
+  --primary-hover: #245ed2;
+  --on-primary: #fff;
+  --bg: light-dark(#f4f7fb, #1a1a1a);
+  --surface: light-dark(#fff, #252525);
+  --text: light-dark(#17233a, #f0f0f0);
+  --muted: light-dark(#52647e, #b5b5b5);
+  --border: light-dark(#cbd5e3, #383838);
+  --soft: light-dark(#e7efff, #243249);
+  --on-soft: light-dark(#2455a6, #9cc2ff);
+  --danger: light-dark(#c43d4b, #ff929a);
+  --danger-soft: color-mix(in srgb, var(--danger) 10%, transparent);
+  --success: light-dark(#258b68, #86e8b5);
+  --success-soft: color-mix(in srgb, var(--success) 10%, transparent);
+  --warning: light-dark(#d96732, #ff9b73);
+  --warning-soft: color-mix(in srgb, var(--warning) 10%, transparent);
+  --focus: light-dark(#2f6fed, #9cc2ff);
+  --input: var(--bg);
+  --shadow: 0 2px 3px light-dark(rgb(23 35 58 / 8%), rgb(0 0 0 / 20%)),
+    0 1px 2px light-dark(rgb(23 35 58 / 3%), rgb(0 0 0 / 8%));
+  --dialog-shadow: 0 12px 36px rgb(0 0 0 / 20%);
+  --dock-shadow: 0 -6px 18px light-dark(rgb(23 35 58 / 10%), rgb(0 0 0 / 30%));
+  --dock-border: light-dark(#b0bed2, #5a5a5a);
+  --dialog-backdrop: rgb(17 24 39 / 38%);
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}

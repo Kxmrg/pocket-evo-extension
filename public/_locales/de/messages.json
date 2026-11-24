@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Pocket Evo Website-Import"
+  },
+  "extensionDescription": {
+    "message": "Erstellen Sie aus einer angemeldeten PT-Website einen QR-Code für den Pocket Evo-Import."
+  },
+  "actionTitle": {
+    "message": "Pocket Evo Website-Import öffnen"
+  }
+}

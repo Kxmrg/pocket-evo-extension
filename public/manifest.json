@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Pocket Evo 站点导入插件",
-  "version": "1.4.5",
-  "description": "从已登录的 PT 站点生成 Pocket Evo 导入二维码",
+  "name": "__MSG_extensionName__",
+  "version": "1.6.0",
+  "description": "__MSG_extensionDescription__",
   "minimum_chrome_version": "132",
   "permissions": [
     "tabs",
@@ -16,7 +16,7 @@
     "https://*/*"
   ],
   "action": {
-    "default_title": "打开 Pocket Evo 站点导入插件"
+    "default_title": "__MSG_actionTitle__"
   },
   "side_panel": {
     "default_path": "popup.html"
@@ -30,5 +30,6 @@
     "32": "icons/icon-32.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
-  }
+  },
+  "default_locale": "en"
 }

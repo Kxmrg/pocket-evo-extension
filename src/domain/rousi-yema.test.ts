@@ -22,6 +22,6 @@ describe('Rousi / Yema independent sites',()=>{
   const d=fixture('yema');d.pages=[page!];expect(validateDraft(d).valid).toBe(true);
  });
  it('Yema detail entry is rejected with a specific entry error, never silently imported',()=>{
-  const d=fixture('yema');d.pages[0]!.path='/torrent/detail/42';expect(validateDraft(d).errors.pages).toContain('第1个');
+  const d=fixture('yema');d.pages[0]!.path='/torrent/detail/42';expect(validateDraft(d).errors.pages).toEqual({code:'entryUnsupported',index:0});
  });
 });

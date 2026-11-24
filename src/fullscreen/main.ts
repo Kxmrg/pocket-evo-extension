@@ -1,46 +1,95 @@
-import QRCode from 'qrcode';
 import { consumeFullscreenQr, type FullscreenQrSession } from '../browser/fullscreen-qr';
-import { QR_ERROR_CORRECTION_LEVEL } from '../domain/payload';
+import { mountIllustration } from '../ui/illustration';
+import { createText, resolveLocale } from '../ui/locales';
+import { drawQrCanvas } from '../ui/qr-canvas';
+import { fullscreenErrorView, fullscreenQrView } from './view';
+import '../ui/tokens.css';
+import '../ui/controls.css';
 import './styles.css';
 
 const rootElement = document.querySelector<HTMLElement>('#fullscreen-app');
 if (!rootElement) throw new Error('Fullscreen QR root is missing');
 const root: HTMLElement = rootElement;
+const locale = resolveLocale(navigator.languages);
+const t = createText(locale);
+document.documentElement.lang = locale;
+document.title = t('qrLabel');
 
 let session: FullscreenQrSession | null = null;
+let disposeArt: (() => void) | undefined;
+let resizeTimer: number | undefined;
+let drawVersion = 0;
+let disposed = false;
 
-function qrSize(): number {
-  return Math.max(280, Math.floor(Math.min(window.innerWidth - 80, window.innerHeight - 150, 1400)));
+function showError(expired = false): void {
+  session = null;
+  disposeArt?.();
+  root.innerHTML = fullscreenErrorView(t, expired);
+  const art = root.querySelector<HTMLElement>('.astronaut');
+  disposeArt = art ? mountIllustration(art) : undefined;
 }
 
-async function draw(): Promise<void> {
-  if (!session) return;
-  const canvas = root.querySelector<HTMLCanvasElement>('#fullscreen-qr');
-  if (!canvas) return;
-  await QRCode.toCanvas(canvas, session.text, {
-    width: qrSize(),
-    margin: 4,
-    errorCorrectionLevel: QR_ERROR_CORRECTION_LEVEL,
-    color: { dark: '#102a2b', light: '#fffdf6' },
-  });
+function qrSize(slot: HTMLElement): number {
+  const width = slot.clientWidth || window.innerWidth - 48;
+  const height = slot.clientHeight || window.innerHeight - 176;
+  return Math.max(1, Math.min(width, height, 360));
+}
+
+async function draw(version: number): Promise<void> {
+  if (disposed || version !== drawVersion || !session) return;
+  const slot = root.querySelector<HTMLElement>('[data-canvas-slot]');
+  if (!slot) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'fullscreen-qr';
+  canvas.setAttribute('aria-label', t('qrLabel'));
+  canvas.setAttribute('role', 'img');
+  try {
+    await drawQrCanvas(canvas, session.text, qrSize(slot));
+    if (disposed || version !== drawVersion) return;
+    // The QR library sets inline dimensions. Let the slot constrain the rendered square.
+    canvas.style.removeProperty('width');
+    canvas.style.removeProperty('height');
+    slot.replaceChildren(canvas);
+    slot.removeAttribute('aria-busy');
+  } catch {
+    if (!disposed && version === drawVersion) showError();
+  }
 }
 
 async function start(): Promise<void> {
-  session = await consumeFullscreenQr(window.location.hash);
-  if (!session) {
-    root.innerHTML = '<section class="fullscreen-error"><h1>二维码已失效</h1><p>请返回插件重新打开全屏显示。</p></section>';
-    return;
+  try {
+    const data = await consumeFullscreenQr(window.location.hash);
+    if (disposed) return;
+    if (!data) {
+      showError(true);
+      return;
+    }
+    session = data;
+    root.innerHTML = fullscreenQrView(t, data.siteName);
+    await draw(++drawVersion);
+  } catch {
+    if (!disposed) showError();
   }
-  root.innerHTML = '<section class="fullscreen-qr"><canvas id="fullscreen-qr" aria-label="Pocket Evo 站点导入二维码"></canvas><strong></strong><p>二维码包含当前站点登录凭据，请勿截图或分享。</p></section>';
-  const siteName = root.querySelector<HTMLElement>('strong');
-  if (siteName) siteName.textContent = session.siteName;
-  await draw();
 }
 
-let resizeTimer = 0;
-window.addEventListener('resize', () => {
+function scheduleDraw(): void {
+  if (!session) return;
+  const version = ++drawVersion;
   window.clearTimeout(resizeTimer);
-  resizeTimer = window.setTimeout(() => { void draw(); }, 100);
-});
+  resizeTimer = window.setTimeout(() => { void draw(version); }, 100);
+}
 
+function dispose(): void {
+  disposed = true;
+  session = null;
+  window.clearTimeout(resizeTimer);
+  window.removeEventListener('resize', scheduleDraw);
+  disposeArt?.();
+  disposeArt = undefined;
+  root.replaceChildren();
+}
+
+window.addEventListener('resize', scheduleDraw);
+window.addEventListener('pagehide', dispose, { once: true });
 void start();

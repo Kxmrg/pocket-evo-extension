@@ -74,10 +74,10 @@ describe('adaptSite', () => {
       passkey: '295964',
       token: null,
     });
-    expect(draft.fieldWarnings.token).toBe('请前往控制台实验室复制令牌并手动填写');
+    expect(draft.fieldWarnings.token).toEqual({ code: 'mtApiKeyManual' });
   });
 
-  it('auto-fills site tags from categories and download tags from the site name', () => {
+  it('leaves site and downloader tags empty even when categories and a site name are available', () => {
     const draft = adaptSite(input('nexusphp', 'https://pt.example/torrents.php', {
       title: 'Example PT - 首页',
       links: [
@@ -86,18 +86,18 @@ describe('adaptSite', () => {
         { text: '电视剧', href: 'https://pt.example/torrents.php?cat=402' },
       ],
     }));
-    expect(draft.tags).toBe('MOVIE,TV');
-    expect(draft.downloadTags).toBe('Example PT');
+    expect(draft.tags).toBeNull();
+    expect(draft.downloadTags).toBeNull();
   });
 
   it('marks required special credentials when extraction fails', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
     expect(draft.fieldWarnings).toMatchObject({
-      passkey: '未自动获取 UID',
-      webToken: '未自动获取 Auth（可选）',
-      webDeviceId: '未自动获取 DID（可选）',
-      webVisitorId: '未自动获取 VID（可选）',
-      token: '请前往控制台实验室复制令牌并手动填写',
+      passkey: { code: 'credentialMissing', field: 'UID' },
+      webToken: { code: 'credentialMissing', field: 'Auth' },
+      webDeviceId: { code: 'credentialMissing', field: 'DID' },
+      webVisitorId: { code: 'credentialMissing', field: 'VID' },
+      token: { code: 'mtApiKeyManual' },
     });
   });
 });

@@ -81,6 +81,31 @@ describe('toOriginPattern', () => {
     expect(cookies[0]?.name).toBe('c_secure_uid');
   });
 
+  it('fails closed when the selected tab has no cookie store', async () => {
+    vi.stubGlobal('chrome', {
+      cookies: {
+        getAllCookieStores: async () => [{ id: 'default', tabIds: [1] }],
+        getAll: async () => [{ name: 'session', value: 'wrong-account', domain: 'pt.example', path: '/', secure: true }],
+      },
+    });
+    await expect(readCookies('https://pt.example/', 77)).rejects.toThrow();
+  });
+
+  it('does not import host-only cookies from the parent host through the store fallback', async () => {
+    vi.stubGlobal('chrome', {
+      cookies: {
+        getAllCookieStores: async () => [{ id: 'default', tabIds: [42] }],
+        getAll: async (details: chrome.cookies.GetAllDetails) => details.url || details.domain ? [] : [
+          { name: 'parent_session', value: 'parent-only', domain: 'pt.example', hostOnly: true, path: '/', secure: true },
+          { name: 'shared_session', value: 'shared', domain: '.pt.example', hostOnly: false, path: '/', secure: true },
+          { name: 'child_session', value: 'child', domain: 'www.pt.example', hostOnly: true, path: '/', secure: true },
+        ],
+      },
+    });
+    const cookies = await readCookies('https://www.pt.example/', 42);
+    expect(cookies.map((cookie) => cookie.name)).toEqual(['shared_session', 'child_session']);
+  });
+
   it('falls back to a domain query when Chrome returns no cookies for the page URL', async () => {
     const getAll = vi.fn()
       .mockResolvedValueOnce([])

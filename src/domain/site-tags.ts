@@ -1,5 +1,9 @@
 export const SITE_TAGS = ['MOVIE', 'TV', 'MUSIC', 'GAME', 'AUDIO', '9KG', 'BOOK', 'COMICS', 'DOCUMENTARY', 'CARTOON', 'VARIETY SHOW', 'MV', 'MAC', 'SPORTS', 'SOFTWARE'] as const;
 
+export function splitTags(value: string | null | undefined): string[] {
+  return [...new Set((value ?? '').split(/[,，]/).map(tag => tag.trim()).filter(Boolean))];
+}
+
 const TAG_KEYWORDS: Array<{ tag: string; keywords: string[] }> = [
   { tag: 'MOVIE', keywords: ['电影', '影片'] },
   { tag: 'TV', keywords: ['电视剧', '剧集'] },

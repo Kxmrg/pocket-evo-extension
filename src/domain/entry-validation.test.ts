@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validEntry } from './evo-entry';
+import { safeEntryPath, validEntry } from './evo-entry';
 
 describe('API entry limits match Evo importer', () => {
   for (const [architecture, path, key] of [
@@ -13,4 +13,14 @@ describe('API entry limits match Evo importer', () => {
       expect(validEntry(architecture, path)).toBe(true);
     });
   }
+});
+
+it('rejects even an empty fragment because Evo forbids entry fragments', () => {
+ expect(safeEntryPath('/torrents.php#')).toBe(false);
+ expect(validEntry('nexusphp', '/torrents.php#')).toBe(false);
+});
+
+it('rejects MT category numbers outside the Evo integer range', () => {
+ expect(validEntry('mtorrent', '/browse?cat=9223372036854775808')).toBe(false);
+ expect(validEntry('mtorrent', '/browse?cat=9223372036854775807')).toBe(true);
 });

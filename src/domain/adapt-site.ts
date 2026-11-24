@@ -1,10 +1,9 @@
 import {independentHtml,independentHtmlNames} from './independent-html';
 import { selectCandidate, type FieldCandidate } from './candidates';
 import { extractTorrentPages, type DraftPage } from './torrent-pages';
+import type { ImportIssue } from './import-issue';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
 import { privateSiteForHost } from './private-sites';
-import { extractSiteCategories } from './site-categories';
-import { mapCategoriesToTags } from './site-tags';
 
 export interface SiteDraft {
   architecture: ArchitectureId;
@@ -26,7 +25,7 @@ export interface SiteDraft {
   pigVisitorId?: string | null;
 
 
-  fieldWarnings: Record<string, string>;
+  fieldWarnings: Record<string, ImportIssue>;
   alternatives: Record<string, FieldCandidate[]>;
 }
 
@@ -85,16 +84,16 @@ function addSelectionMetadata(
   field: string,
   label: string,
   selection: ReturnType<typeof selectCandidate>,
-  warnings: Record<string, string>,
+  warnings: Record<string, ImportIssue>,
   alternatives: Record<string, FieldCandidate[]>,
 ): void {
   if (selection.alternatives.length > 0) alternatives[field] = selection.alternatives;
-  if (!selection.value) warnings[field] = `未自动获取 ${label}`;
-  else if (selection.needsConfirmation) warnings[field] = `${label} 存在多个候选，请确认`;
+  if (!selection.value) warnings[field] = { code: 'credentialMissing', field: label };
+  else if (selection.needsConfirmation) warnings[field] = { code: 'credentialAmbiguous', field: label };
 }
 
 export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput): SiteDraft {
-  const warnings: Record<string, string> = {};
+  const warnings: Record<string, ImportIssue> = {};
   const alternatives: Record<string, FieldCandidate[]> = {};
   const passkey = selectCandidate('passkey', snapshot);
   const cookie = detection.id === 'mtorrent' || detection.id === 'piggo' ? '' : cookieHeader;
@@ -116,10 +115,10 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     webVisitorId = visitorId.value;
     token = '';
     addSelectionMetadata('passkey', 'UID', uid, warnings, alternatives);
-    addSelectionMetadata('webToken', 'Auth（可选）', loginToken, warnings, alternatives);
-    addSelectionMetadata('webDeviceId', 'DID（可选）', deviceId, warnings, alternatives);
-    addSelectionMetadata('webVisitorId', 'VID（可选）', visitorId, warnings, alternatives);
-    warnings.token = '请前往控制台实验室复制令牌并手动填写';
+    addSelectionMetadata('webToken', 'Auth', loginToken, warnings, alternatives);
+    addSelectionMetadata('webDeviceId', 'DID', deviceId, warnings, alternatives);
+    addSelectionMetadata('webVisitorId', 'VID', visitorId, warnings, alternatives);
+    warnings.token = { code: 'mtApiKeyManual' };
   }
 
   if (detection.id === 'piggo') {
@@ -129,19 +128,17 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
       token = snapshot.storage.find((entry) => entry.area === 'local' && entry.key === 'pig_token')?.value ?? '';
       if (/^[0-9a-f]{32}$/.test(snapshot.pigVisitorId ?? '')) pigVisitorId = snapshot.pigVisitorId!;
     }
-    if (!token) warnings.token = '未获取登录信息，请先登录猪猪后重试';
-    if (!pigVisitorId) warnings.pigVisitorId = '未获取浏览器访客信息，请等待页面加载完成后刷新';
+    if (!token) warnings.token = { code: 'pigTokenMissing' };
+    if (!pigVisitorId) warnings.pigVisitorId = { code: 'pigVisitorMissing' };
   }
 
-  if (!cookie && detection.id !== 'unknown' && detection.id !== 'piggo') warnings.cookie ??= '未自动获取 Cookie';
+  if (!cookie && detection.id !== 'unknown' && detection.id !== 'piggo') warnings.cookie ??= { code: 'credentialMissing', field: 'Cookie' };
   if (detection.id !== 'mtorrent' && detection.id !== 'piggo') {
-    if (passkey.needsConfirmation) warnings.passkey = 'Passkey 存在多个候选，请确认';
+    if (passkey.needsConfirmation) warnings.passkey = { code: 'credentialAmbiguous', field: 'Passkey' };
     if (passkey.alternatives.length > 0) alternatives.passkey = passkey.alternatives;
   }
 
   const name = detection.id === 'tnode' ? 'ZhuQue' : siteName(snapshot, detection.id);
-  const categories = extractSiteCategories(snapshot);
-  const siteTags = mapCategoriesToTags(categories);
   return {
     architecture: detection.id,
     scheme: schemeMap[detection.id] ?? null,
@@ -160,8 +157,8 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
         : passkey.value || null,
     userAgent: snapshot.userAgent || null,
     importUserAgent: true,
-    tags: siteTags.length > 0 ? siteTags.join(',') : null,
-    downloadTags: name,
+    tags: null,
+    downloadTags: null,
 
     token: token || null,
 

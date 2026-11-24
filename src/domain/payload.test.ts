@@ -19,10 +19,40 @@ describe('Evo QR',()=>{
  it('does not export CSRF or stale tokens for NP/Tnode',()=>{
   for(const id of ['nexusphp','tnode'] as const){const d=fixture(id);d.token='stale'; expect(JSON.stringify(buildImportPayload(d))).not.toContain('stale');}
  });
- it('rejects unsupported architectures and oversized payloads before showing a QR',()=>{
-  const d=fixture();d.architecture='unknown';d.scheme=null;expect(()=>encodeImportPayload(d)).toThrow();
-  const large=fixture();large.cookie=Array.from({length:16000},(_,i)=>String.fromCharCode(33+(i*i%90))).join('');
-  large.cookie=Array.from({length:16000},()=>Math.random().toString(36).slice(2,3)).join('');
-  expect(()=>encodeImportPayload(large)).toThrow(/二维码/);
+ it('throws the first validation issue without exposing rejected credentials',()=>{
+  const d=fixture();d.architecture='unknown';d.scheme=null;d.cookie='private-fixture\ncredential';
+  expect(()=>encodeImportPayload(d)).toThrow(expect.objectContaining({
+   name:'ImportPayloadError',message:'architectureUnsupported',issue:{code:'architectureUnsupported'},
+  }));
+ });
+ it('rejects payloads that exceed QR capacity after compression',()=>{
+  const d=fixture();
+  let seed=1234;
+  d.cookie=Array.from({length:16000},()=>{
+   seed=(Math.imul(1664525,seed)+1013904223)>>>0;
+   return String.fromCharCode(33+seed%90);
+  }).join('');
+  expect(()=>encodeImportPayload(d)).toThrow(expect.objectContaining({
+   name:'ImportPayloadError',message:'qrCapacity',issue:{code:'qrCapacity'},
+  }));
+ });
+ it('rejects highly compressible data that exceeds the Evo decoded byte limit', () => {
+  const d=fixture();
+  d.pages=Array.from({length:50}, (_, i) => ({name:`页面${i}`,path:`/torrents.php?search=${'汉'.repeat(2000)}`,selected:true,tags:null}));
+  expect(()=>encodeImportPayload(d)).toThrow(expect.objectContaining({
+   name:'ImportPayloadError',message:'decodedPayloadTooLarge',issue:{code:'decodedPayloadTooLarge'},
+  }));
+ });
+ it('exports only distinct chosen tags across English and Chinese separators', () => {
+  const d=fixture();d.tags=' MOVIE， TV, MOVIE ，';d.downloadTags=' 剧集，电影,剧集 ';
+  const p=buildImportPayload(d);
+  expect(p.site.tags).toEqual(['MOVIE','TV']);
+  expect(p.site.downloadTags).toEqual(['剧集','电影']);
+ });
+ it('omits empty tag lists after clearing their contents', () => {
+  const d=fixture();d.tags=' , ， ';d.downloadTags=' ， , ';
+  const p=buildImportPayload(d);
+  expect(p.site).not.toHaveProperty('tags');
+  expect(p.site).not.toHaveProperty('downloadTags');
  });
 });

@@ -7,7 +7,7 @@ import { validEntry } from './evo-entry';
 import { draftPageFromSnapshot } from './torrent-pages';
 import { validateDraft } from './validate-draft';
 import { collectSiteDraft } from '../application/collect-site';
-import { renderPopup } from '../popup/render';
+import { createPopupView } from '../popup/view';
 import type { PageSnapshot } from './types';
 
 const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature';
@@ -94,12 +94,14 @@ describe('Piggo independent protocol', () => {
     const draft=adaptSite({detection:detectArchitecture(s),snapshot:s,cookieHeader:''});
     const root=document.createElement('div');
     const actions = new Proxy({}, {get:()=>()=>{}}) as never;
-    renderPopup(root,{kind:'ready',draft,errors:{},revealed:new Set()},actions);
+    const view=createPopupView(root,'zh');
+    view.render({kind:'ready',draft,errors:{},revealed:new Set()},actions);
     expect(root.querySelector<HTMLInputElement>('#token')?.type).toBe('password');
     expect(root.querySelector<HTMLInputElement>('#pigVisitorId')?.type).toBe('password');
-    expect(root.querySelector('label[for="token"]')?.textContent).toBe('登录 Token');
+    expect(root.querySelector('label[for="token"]')?.textContent).toContain('登录 Token');
     expect(root.querySelector('#cookie')).toBeNull();
     expect(root.querySelector('#passkey')).toBeNull();
+    view.dispose();
   });
   it('requires a valid visitor id and rejects malformed visitor values', () => {
     const s=snapshot();

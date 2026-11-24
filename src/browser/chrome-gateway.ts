@@ -95,6 +95,10 @@ export async function readCookies(url: string, tabId?: number): Promise<CookieLi
   const storeId = selectedTabId === undefined
     ? undefined
     : stores.find((store) => store.tabIds.includes(selectedTabId))?.id;
+  // A closed or unavailable tab must never fall back to another profile's store.
+  if (selectedTabId !== undefined && storeId === undefined) {
+    throw new Error('Current tab cookie store unavailable');
+  }
   const hostname = new URL(url).hostname;
   let partitionKey: chrome.cookies.CookiePartitionKey | undefined;
   if (selectedTabId !== undefined && typeof chrome.cookies.getPartitionKey === 'function') {
@@ -131,6 +135,9 @@ export async function readCookies(url: string, tabId?: number): Promise<CookieLi
   const uniqueCookies = new Map<string, chrome.cookies.Cookie>();
   for (const result of fulfilledQueries) {
     for (const cookie of result.value) {
+      // The full-store fallback includes parent-host cookies that are not valid
+      // for this subdomain. Preserve Chrome's host-only boundary before mapping.
+      if (cookie.hostOnly && cookie.domain.toLowerCase() !== hostname.toLowerCase()) continue;
       const partition = cookie.partitionKey
         ? `${cookie.partitionKey.topLevelSite ?? ''}\u0000${cookie.partitionKey.hasCrossSiteAncestor ?? ''}`
         : '';

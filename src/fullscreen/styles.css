@@ -1,12 +1,177 @@
-:root { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #17213a; background: #f4f7fb; }
-* { box-sizing: border-box; }
-html, body, #fullscreen-app { min-width: 300px; min-height: 100%; margin: 0; }
-body { min-height: 100vh; }
-#fullscreen-app { display: grid; min-height: 100vh; padding: 24px; place-items: center; }
-.fullscreen-qr { display: grid; justify-items: center; gap: 14px; }
-.fullscreen-qr canvas { display: block; max-width: calc(100vw - 48px); max-height: calc(100vh - 140px); background: #fffdf6; image-rendering: pixelated; }
-.fullscreen-qr strong { max-width: min(720px, calc(100vw - 48px)); overflow: hidden; font-size: 20px; text-overflow: ellipsis; white-space: nowrap; }
-.fullscreen-qr p { margin: 0; color: #c43f4b; font-size: 14px; font-weight: 650; }
-.fullscreen-error { text-align: center; }
-.fullscreen-error h1 { margin: 0 0 10px; font-size: 24px; }
-.fullscreen-error p { margin: 0; color: #63708a; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.55 var(--font-ui);
+}
+
+.fullscreen-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 22px;
+  block-size: 100dvh;
+  min-block-size: 250px;
+  max-block-size: 660px;
+  max-inline-size: 620px;
+  margin-inline: auto;
+  padding: 20px 20px 24px;
+}
+
+.fullscreen-shell .app-header,
+.fullscreen-shell .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+}
+
+.fullscreen-shell .brand img {
+  flex: none;
+  object-fit: contain;
+}
+
+.fullscreen-shell .brand strong,
+.fullscreen-shell .brand span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.fullscreen-shell .brand strong {
+  font-weight: 650;
+  font-size: 16px;
+}
+
+.fullscreen-shell .brand span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.fullscreen-flow {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  inline-size: 100%;
+  max-inline-size: 440px;
+  margin-inline: auto;
+}
+
+.fullscreen-flow h1,
+.fullscreen-error h1 {
+  margin: 0;
+  font-size: 23px;
+  line-height: 1.35;
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.fullscreen-qr {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.fullscreen-canvas-slot {
+  display: grid;
+  place-items: center;
+  container-type: size;
+}
+
+.fullscreen-canvas-slot canvas {
+  display: block;
+  inline-size: min(100cqw, 100cqh, 360px);
+  block-size: auto;
+  aspect-ratio: 1;
+  background: #fff;
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+
+.fullscreen-site {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+  gap: 10px;
+  padding-block: 12px;
+  border-block-start: 1px solid var(--border);
+}
+
+.fullscreen-site strong {
+  min-inline-size: 0;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.fullscreen-site-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 8px;
+  background-color: var(--soft);
+  color: var(--on-soft);
+}
+
+.fullscreen-flow .privacy {
+  padding-block: 2px;
+}
+
+.fullscreen-error {
+  align-self: start;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: min(48px, 8dvh) 4px 20px;
+  text-align: center;
+}
+
+.fullscreen-error p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.fullscreen-error .astronaut {
+  inline-size: 231px;
+  max-inline-size: 100%;
+  block-size: 95px;
+  margin-block-end: 12px;
+}
+
+.fullscreen-error .astronaut svg {
+  display: block;
+  max-inline-size: 100%;
+}
+
+@media (max-height: 420px) {
+  .fullscreen-shell {
+    gap: 10px;
+    padding-block: 10px;
+  }
+
+  .fullscreen-flow,
+  .fullscreen-qr {
+    gap: 8px;
+  }
+
+  .fullscreen-flow h1 {
+    font-size: 18px;
+  }
+
+  .fullscreen-qr {
+    padding-block-start: 8px;
+  }
+
+  .fullscreen-site {
+    padding-block: 6px;
+  }
+
+  .fullscreen-site-icon {
+    inline-size: 26px;
+    block-size: 26px;
+  }
+}

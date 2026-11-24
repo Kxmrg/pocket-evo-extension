@@ -28,6 +28,33 @@ function deps(overrides: Partial<CollectionDeps> = {}): CollectionDeps {
 }
 
 describe('collectSiteDraft', () => {
+  it('rejects navigation to another origin before collecting cookies', async () => {
+    let cookiesRead = false;
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({
+        ...nexusSnapshot(), url: 'https://other.example/torrents.php',
+        origin: 'https://other.example', host: 'other.example',
+        documentCookie: 'other_session=other-secret',
+      }),
+      readCookies: async () => { cookiesRead = true; return []; },
+    }));
+    expect(result.state).toBe('error');
+    expect(cookiesRead).toBe(false);
+    expect(JSON.stringify(result)).not.toContain('other-secret');
+  });
+
+  it('reads cookies for the captured page path after same-origin navigation', async () => {
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({ ...nexusSnapshot(), url: 'https://pt.example/private/torrents.php' }),
+      readCookies: async (url) => url === 'https://pt.example/private/torrents.php'
+        ? [{ name: 'session', value: 'path-session', domain: 'pt.example', path: '/private', secure: true }]
+        : [],
+    }));
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.draft.cookie).toBe('session=path-session');
+  });
+
   it('returns permission-required before reading private page data', async () => {
     let snapshotRead = false;
     const result = await collectSiteDraft(deps({
@@ -55,7 +82,7 @@ describe('collectSiteDraft', () => {
     expect(result.state).toBe('ready');
     if (result.state !== 'ready') throw new Error('expected ready result');
     expect(result.draft.cookie).toBe('session=page-secret; theme=dark');
-    expect(result.draft.fieldWarnings.cookie).toContain('页面可见 Cookie');
+    expect(result.draft.fieldWarnings.cookie).toEqual({ code: 'cookieVisibleOnly' });
   });
 
   it('explains when neither Chrome nor the current page returns a Cookie', async () => {
@@ -67,7 +94,7 @@ describe('collectSiteDraft', () => {
     expect(result.state).toBe('ready');
     if (result.state !== 'ready') throw new Error('expected ready result');
     expect(result.draft.cookie).toBe('');
-    expect(result.draft.fieldWarnings.cookie).toContain('确认已登录并允许读取本站');
+    expect(result.draft.fieldWarnings.cookie).toEqual({ code: 'cookieUnavailable' });
   });
 
   it('keeps complete API cookies and appends only missing page-visible cookies', async () => {
@@ -93,7 +120,7 @@ describe('collectSiteDraft', () => {
     expect(result.state).toBe('ready');
     if (result.state !== 'ready') throw new Error('expected ready result');
     expect(result.draft.cookie).toBe('session=page-secret');
-    expect(result.draft.fieldWarnings.cookie).toContain('Chrome 完整 Cookie');
+    expect(result.draft.fieldWarnings.cookie).toEqual({ code: 'cookieReadFallback' });
   });
 
   it('extracts the mTorrent web token and UID while leaving the API token manual', async () => {
@@ -127,7 +154,7 @@ describe('collectSiteDraft', () => {
       passkey: '295964',
       token: null,
     });
-    expect(result.draft.fieldWarnings.token).toContain('控制台实验室');
+    expect(result.draft.fieldWarnings.token).toEqual({ code: 'mtApiKeyManual' });
     expect(result.draft.fieldWarnings.cookie).toBeUndefined();
   });
 
@@ -152,8 +179,18 @@ describe('collectSiteDraft', () => {
 
   it('identifies page-probe failures without exposing the underlying error', async () => {
     const result = await collectSiteDraft(deps({ readSnapshot: async () => { throw new Error('private-secret'); } }));
-    expect(result).toEqual({ state: 'error', message: '页面数据读取失败（E_PAGE），请刷新站点页面后重试' });
+    expect(result).toEqual({ state: 'error', issue: { code: 'pageReadFailed' } });
     expect(JSON.stringify(result)).not.toContain('private-secret');
+  });
+
+  it('reports cross-origin navigation without reading cookies', async () => {
+    let reads = 0;
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({ ...nexusSnapshot(), url: 'https://external.invalid/torrents.php' }),
+      readCookies: async () => { reads++; return []; },
+    }));
+    expect(result).toEqual({ state: 'error', issue: { code: 'pageChanged' } });
+    expect(reads).toBe(0);
   });
 });
 
