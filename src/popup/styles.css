@@ -25,8 +25,6 @@ h1 { margin:0; font-size:24px; line-height:1.45; letter-spacing:-.5px; font-weig
 .step-icon { display:grid; place-items:center; width:36px; height:36px; flex:none; border-radius:10px; background:var(--soft); color:var(--on-soft); }
 .guide strong { font-size:13px; font-weight:600; }
 .guide li p { font-size:11px; color:var(--muted); margin:3px 0 0; }
-.local-note { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:11px; margin:20px 2px; }
-.local-note .icon { color:var(--on-soft); width:18px; height:18px; }
 .home>.button { width:100%; }
 .resource-links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 0 24px; }
 .resource-links a { gap:6px; padding:9px 8px; background:var(--surface); font-size:12px; text-decoration:none; }

@@ -50,6 +50,9 @@ describe('production view interactions',()=>{
     view.render({kind:'idle'},handlers);
     expect(root.querySelector('#site-form')).toBeNull();
     expect(root.querySelectorAll('.guide li')).toHaveLength(3);
+    const notice = root.querySelector('[data-action=read]')?.previousElementSibling;
+    expect(notice?.textContent).toContain(createText('zh')('privacyLocal'));
+    expect(notice?.textContent).toContain(createText('zh')('privacyText'));
     expect(root.querySelector<HTMLImageElement>('.brand img')?.getAttribute('src')).toBe('/branding/ring-a.png');
     click('[data-action=read]');expect(handlers.onRead).toHaveBeenCalledOnce();
     expect([...root.querySelectorAll('.resource-links a')].every(a=>a.getAttribute('rel')==='noreferrer')).toBe(true);
