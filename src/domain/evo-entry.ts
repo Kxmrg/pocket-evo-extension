@@ -3,7 +3,7 @@ import type { ArchitectureId } from './types';
 import { safeIssueKeys, type ImportIssue } from './import-issue';
 
 const mtModes = new Set(['normal', 'adult', 'movie', 'music', 'tvshow', 'anime', 'waterfall', 'rss', 'rankings', 'all']);
-const mtFields = new Set(['cat', 'stand', 'team', 'source', 'medium', 'videoCodec', 'audioCodec']);
+const mtFields = new Set(['cat', 'stand', 'team', 'source', 'medium', 'videoCodec', 'audioCodec', 'countries']);
 export function safeEntryPath(path: string): boolean {
   if (path.length > 2048 || /[\s\x00-\x1f]/.test(path)) return false;
   let decoded = path;
