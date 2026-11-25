@@ -247,7 +247,7 @@ export function createPopupController(services: PopupServices, view: PopupView):
       if (disposed || state.kind !== 'ready' || !canAddPage(state)) return;
       const { draft } = state;
       replaceDraft({ ...state, pageActionError: undefined }, {
-        ...draft, pages: [...draft.pages, createManualPage(draft.architecture)],
+        ...draft, pages: [...draft.pages, createManualPage(draft.architecture, draft.address)],
       });
       view.focusPage(draft.pages.length);
     },

@@ -1,3 +1,4 @@
+import { isHxptAddress } from './hxpt';
 import {independentHtml,independentHtmlDefaults,normalizeYingEntry,normalizeKaragargaEntry} from './independent-html';
 import {validEntry} from './evo-entry';
 import { apiProtocol } from './api-protocol';
@@ -40,6 +41,11 @@ export function normalizeEntryPath(id: ArchitectureId, path: string): string {
 export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string, architecture?: ArchitectureId): DraftPage | null {
   try {
     const current = new URL(snapshot.url);
+    if (architecture === 'nexusphp' && isHxptAddress(current.origin)) {
+      if (current.pathname !== '/torrents' || !validEntry(architecture, current.pathname + current.search)) return null;
+      current.searchParams.delete('p');
+      return { name, path: current.pathname + current.search, tags: null, selected: true };
+    }
     if (apiProtocol(current.origin) === 'mtorrent' && /^h5\.m-team\.(cc|io)$/.test(current.hostname)) {
       const route = new URL(current.hash.slice(1), current.origin);
       if (route.pathname !== '/torrents' || route.searchParams.getAll('mode').length > 1) return null;
@@ -67,10 +73,10 @@ export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string, arch
   }
 }
 
-export function createManualPage(id: ArchitectureId): DraftPage {
+export function createManualPage(id: ArchitectureId, address = ''): DraftPage {
   return {
     name: '',
-    path: defaultPathByArchitecture[id] ?? '/torrents.php',
+    path: id === 'nexusphp' && isHxptAddress(address) ? '/torrents' : defaultPathByArchitecture[id] ?? '/torrents.php',
     tags: null,
     selected: true,
   };
@@ -100,6 +106,7 @@ export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot):
   if (id === 'haidan') return page('/torrents.php');
   if (id === 'sunnypt') return page('/torrents?category=All');
   if (id !== 'nexusphp') return [];
+  if (isHxptAddress(snapshot.origin)) return page('/torrents');
   const base = new URL(snapshot.url);
   const candidates = snapshot.links.flatMap(link=> {
     try {

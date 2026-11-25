@@ -28,3 +28,12 @@ it('converts mobile MT categories to API entry syntax',()=>{
   expect(draftPageFromSnapshot(snapshot('https://h5.m-team.cc/index#/torrents?mode=movie&cat=401&sources=2&page=3'),'电影')?.path).toBe('/browse/movie?cat=401&source=2');
   expect(draftPageFromSnapshot(snapshot('https://h5.m-team.io/index#/torrents?onlyFav=1'),'收藏')).toBeNull();
 });
+
+it('uses the HXPT web entry for manual pages and keeps explicit category filters', () => {
+  const origin = 'https://www.hxpt.org';
+  expect(createManualPage('nexusphp', origin).path).toBe('/torrents');
+  expect(createManualPage('nexusphp', origin + '.example').path).toBe('/torrents.php');
+  expect(draftPageFromSnapshot(snapshot(origin + '/torrents?category_id=1&p=5'), '电影', 'nexusphp')?.path)
+    .toBe('/torrents?category_id=1');
+  expect(draftPageFromSnapshot(snapshot(origin + '/torrent/42'), '详情', 'nexusphp')).toBeNull();
+});

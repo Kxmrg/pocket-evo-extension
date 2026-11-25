@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { detectArchitecture } from './detect-architecture';
+import { buildImportPayload } from './payload';
 import { adaptSite } from './adapt-site';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
 
@@ -24,6 +25,28 @@ function input(id: ArchitectureId, url: string, overrides: Partial<PageSnapshot>
 }
 
 describe('adaptSite', () => {
+  it.each(['/my', '/torrents?p=2', '/torrent/42'])('imports HXPT from %s using the NP list entry', path => {
+    const source = input('unknown', 'https://www.hxpt.org' + path, {title: '好学 · PT'});
+    const detection = detectArchitecture(source.snapshot);
+    expect(detection.id).toBe('nexusphp');
+    const draft = adaptSite({...source, detection});
+    expect(buildImportPayload(draft).site).toMatchObject({
+      family: 'nexusphp', address: source.snapshot.origin,
+      entries: [{name: '综合', path: '/torrents'}], secrets: {cookie: source.cookieHeader},
+    });
+  });
+
+  it('imports only the HXPT web session even when a tracker passkey is present', () => {
+    const source = input('nexusphp', 'https://www.hxpt.org/torrents', {
+      candidates: [{key: 'passkey', source: 'dom', value: 'fixture-tracker-key'}],
+    });
+    const draft = adaptSite(source);
+    expect(draft.passkey).toBeNull();
+    expect(draft.alternatives.passkey).toBeUndefined();
+    expect(buildImportPayload({...draft, passkey: 'stale hidden value'}).site.secrets)
+      .toEqual({cookie: source.cookieHeader});
+  });
+
   it('maps NexusPHP directly to Flutter SiteConfig fields', () => {
     const draft = adaptSite(input('nexusphp', 'https://pt.example/torrents.php'));
     expect(draft).toMatchObject({

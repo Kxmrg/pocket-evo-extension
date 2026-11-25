@@ -1,3 +1,4 @@
+import { usesHxptWebSession } from '../domain/hxpt';
 import type { SiteDraft } from '../domain/adapt-site';
 import type { ImportIssue } from '../domain/import-issue';
 import { splitTags } from '../domain/site-tags';
@@ -92,7 +93,8 @@ export function createPopupView(root:HTMLElement,locale:Locale):PopupView {
     render(state,nextActions){
       if(disposed)return;actions=nextActions;
       const previous=current;
-      const stable=state.kind==='ready'&&previous?.kind==='ready'&&state.draft.architecture===previous.draft.architecture||state.kind==='qr'&&previous?.kind==='qr'&&state.payload.text===previous.payload.text;
+      const stable=state.kind==='ready'&&previous?.kind==='ready'&&state.draft.architecture===previous.draft.architecture&&
+        usesHxptWebSession(state.draft.architecture,state.draft.address)===usesHxptWebSession(previous.draft.architecture,previous.draft.address)||state.kind==='qr'&&previous?.kind==='qr'&&state.payload.text===previous.payload.text;
       current=state;
       if(stable&&state.kind==='ready'&&previous?.kind==='ready'&&state.draft.pages.length!==previous.draft.pages.length){
         const list=content.querySelector<HTMLElement>('.page-list')!;

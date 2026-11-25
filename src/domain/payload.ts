@@ -1,3 +1,4 @@
+import { usesHxptWebSession } from './hxpt';
 import {independentHtml} from './independent-html';
 import { deflateSync } from 'fflate';
 import QRCode from 'qrcode';
@@ -26,7 +27,7 @@ export function buildImportPayload(draft: SiteDraft) {
       ...(draft.webToken ? {webToken:draft.webToken} : {}),
       ...(draft.webDeviceId ? {webDeviceId:draft.webDeviceId} : {}),
       ...(draft.webVisitorId ? {webVisitorId:draft.webVisitorId} : {}),
-    } : {cookie:draft.cookie,...(!independentHtml.has(draft.architecture) && !['gazelle','unit3d','btitracker','beyondhd'].includes(draft.architecture) && draft.passkey ? {passkey:draft.passkey} : {})},
+    } : {cookie:draft.cookie,...(!independentHtml.has(draft.architecture) && !['gazelle','unit3d','btitracker','beyondhd'].includes(draft.architecture) && !usesHxptWebSession(draft.architecture, draft.address) && draft.passkey ? {passkey:draft.passkey} : {})},
   }};
 }
 

@@ -1,3 +1,4 @@
+import { usesHxptWebSession } from './hxpt';
 import {independentHtml,independentHtmlNames} from './independent-html';
 import { selectCandidate, type FieldCandidate } from './candidates';
 import { extractTorrentPages, type DraftPage } from './torrent-pages';
@@ -95,7 +96,7 @@ function addSelectionMetadata(
 export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput): SiteDraft {
   const warnings: Record<string, ImportIssue> = {};
   const alternatives: Record<string, FieldCandidate[]> = {};
-  const passkey = selectCandidate('passkey', snapshot);
+  const passkey = usesHxptWebSession(detection.id, snapshot.origin) ? null : selectCandidate('passkey', snapshot);
   const cookie = detection.id === 'mtorrent' || detection.id === 'piggo' ? '' : cookieHeader;
   let mTorrentUid = '';
   let webToken = '';
@@ -133,7 +134,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
   }
 
   if (!cookie && detection.id !== 'unknown' && detection.id !== 'piggo') warnings.cookie ??= { code: 'credentialMissing', field: 'Cookie' };
-  if (detection.id !== 'mtorrent' && detection.id !== 'piggo') {
+  if (passkey && detection.id !== 'mtorrent' && detection.id !== 'piggo') {
     if (passkey.needsConfirmation) warnings.passkey = { code: 'credentialAmbiguous', field: 'Passkey' };
     if (passkey.alternatives.length > 0) alternatives.passkey = passkey.alternatives;
   }
@@ -154,7 +155,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
       ? mTorrentUid || null
       : independentHtml.has(detection.id) || detection.id === 'piggo' || detection.id === 'rousi' || detection.id === 'yema' || detection.id === 'cola' || detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'btitracker' || detection.id === 'private' || detection.id === 'beyondhd'
         ? null
-        : passkey.value || null,
+        : passkey?.value || null,
     userAgent: snapshot.userAgent || null,
     importUserAgent: true,
     tags: null,

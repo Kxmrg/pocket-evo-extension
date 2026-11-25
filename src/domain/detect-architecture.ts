@@ -1,3 +1,4 @@
+import { isHxptAddress } from './hxpt';
 import { apiProtocol } from './api-protocol';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
 import { privateSiteForHost } from './private-sites';
@@ -146,6 +147,7 @@ export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   // Adapted NP fork: its homepage brands itself PTT-NP and exposes only two
   // generic route signals. Keep the override limited to verified site hosts.
   const host = snapshot.host.toLowerCase().replace(/\.$/, '');
+  if (isHxptAddress(snapshot.origin)) return fixed('nexusphp', '好学网页解析');
   if (host === 'www.uhddolby.com') return fixed('nexusphp', '已适配高清杜比域名');
   if (host === 'pttime.org' || host === 'www.pttime.org') {
     return fixed('nexusphp', '已适配 PTTime / PTT-NP 域名');

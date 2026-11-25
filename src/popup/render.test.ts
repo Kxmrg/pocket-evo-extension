@@ -110,6 +110,12 @@ describe('production view interactions',()=>{
     expect([...root.querySelectorAll('.sensitive-panel input')].map(x=>x.id)).toEqual(ids);
     expect([...root.querySelectorAll<HTMLInputElement>('.sensitive-panel input')].every(x=>x.type==='password')).toBe(true);
   });
+  it('shows only the web session field when the address changes to HXPT', () => {
+    view.render(ready(),handlers);
+    expect(input('passkey')).not.toBeNull();
+    view.render(ready({draft:draft({address:'https://www.hxpt.org'})}),handlers);
+    expect([...root.querySelectorAll('.sensitive-panel input')].map(element => element.id)).toEqual(['cookie']);
+  });
   it('reveals only the selected credential without replacing the input',()=>{
     const state=ready();view.render(state,handlers);const cookie=input('cookie');
     click('[data-reveal=cookie]');expect(handlers.onToggleCredential).toHaveBeenCalledWith('cookie');

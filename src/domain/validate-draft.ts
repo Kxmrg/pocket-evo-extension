@@ -1,3 +1,4 @@
+import { usesHxptWebSession } from './hxpt';
 import { independentHtml } from './independent-html';
 import { apiProtocol } from './api-protocol';
 import type { SiteDraft } from './adapt-site';
@@ -63,7 +64,7 @@ export function validateDraft(draft: SiteDraft): DraftValidation {
     if (!['http:','https:'].includes(u.protocol) || !u.hostname || u.username || u.password || u.search || u.hash || (u.pathname !== '/' && u.pathname !== '')) throw new Error();
   } catch { errors.address = { code: 'addressInvalid' }; }
   if (draft.architecture !== 'mtorrent' && draft.architecture !== 'piggo' && (!draft.cookie.trim() || draft.cookie.length > 16384 || /[\r\n]/.test(draft.cookie))) errors.cookie = { code: 'cookieInvalid' };
-  if (draft.architecture !== 'mtorrent' && ((draft.passkey?.length ?? 0)>256 || /[\s\x00-\x1f]/.test(draft.passkey ?? ''))) errors.passkey = { code: 'passkeyInvalid' };
+  if (draft.architecture !== 'mtorrent' && !usesHxptWebSession(draft.architecture, draft.address) && ((draft.passkey?.length ?? 0)>256 || /[\s\x00-\x1f]/.test(draft.passkey ?? ''))) errors.passkey = { code: 'passkeyInvalid' };
   if (draft.architecture === 'mtorrent') {
     if (!draft.token?.trim()) errors.token = { code: 'apiKeyRequired' };
     if (!/^[1-9][0-9]{0,19}$/.test(draft.passkey ?? '')) errors.passkey = { code: 'uidInvalid' };

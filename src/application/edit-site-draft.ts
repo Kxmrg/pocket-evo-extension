@@ -36,10 +36,9 @@ function crossesPiggo(from: ArchitectureId, to: ArchitectureId): boolean {
   return from !== to && (from === 'piggo' || to === 'piggo');
 }
 
-function convertedPages(draft: SiteDraft, architecture: ArchitectureId): SiteDraft['pages'] {
-  if (draft.architecture === architecture) return draft.pages;
-  const from = createManualPage(draft.architecture).path;
-  const to = createManualPage(architecture).path;
+function convertedPages(draft: SiteDraft, architecture: ArchitectureId, address = draft.address): SiteDraft['pages'] {
+  const from = createManualPage(draft.architecture, draft.address).path;
+  const to = createManualPage(architecture, address).path;
   if (from === to) return draft.pages;
   return draft.pages.map(page => page.path === from ? { ...page, path: to } : page);
 }
@@ -94,7 +93,7 @@ export function changeDraftField(draft: SiteDraft, field: DraftField, value: str
         ...draft, address: text, architecture, scheme: schemeByArchitecture[architecture] ?? null,
         token: crossesPiggo(draft.architecture, architecture) ? null : draft.token,
         pigVisitorId: architecture === 'piggo' && architecture === draft.architecture ? draft.pigVisitorId : null,
-        pages: convertedPages(draft, architecture),
+        pages: convertedPages(draft, architecture, text),
       };
       return architecture === draft.architecture ? next : clearIncompatiblePasskey(next);
     }
