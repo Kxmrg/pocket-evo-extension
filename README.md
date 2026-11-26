@@ -14,6 +14,8 @@ npm run build
 
 构建产物位于 `dist/` 目录。
 
+维护者发布新版本时请参阅[插件发布流程](RELEASE.md)。
+
 ## 安装
 
 1. 运行 `npm run build`；
